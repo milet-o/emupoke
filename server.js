@@ -1236,10 +1236,13 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  // API: Status e URL do Túnel ngrok
+  // API: Status e URL do Túnel ngrok / Render
   if (pathname === '/api/tunnel') {
+    const proto = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers.host;
+    const publicUrl = process.env.RENDER ? `${proto}://${host}` : activeNgrokUrl;
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    return res.end(JSON.stringify({ active: !!activeNgrokUrl, url: activeNgrokUrl }));
+    return res.end(JSON.stringify({ active: true, url: publicUrl }));
   }
 
   // 1. API: Listar Jogos sob demanda por Fonte (`source=pokebat` ou `source=hackdex`)
@@ -1655,7 +1658,7 @@ server.listen(PORT, async () => {
   console.log(`📦 Cache de ROMs Local: ${CACHE_DIR}`);
   console.log(`🧬 ROMs Base (Auto-Patcher HackDex): ${BASE_ROMS_DIR}`);
 
-  if (ngrok) {
+  if (ngrok && !process.env.RENDER) {
     try {
       console.log(`🔄 Conectando túnel ngrok em https://${NGROK_DOMAIN}...`);
       const session = await ngrok.forward({

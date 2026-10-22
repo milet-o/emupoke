@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Privacidade - PokeBat Web Hub</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --surface: #151a24;
+      --border: #242c3d;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --primary: #ef4444;
+    }
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 1.25rem;
+      color: #60a5fa;
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+    p, li {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 24px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← Voltar ao Emulador</a>
+    <div class="badge">Privacidade & Proteção de Dados</div>
+    <h1>Política de Privacidade</h1>
+    <p>Última atualização: 22 de outubro de 2026</p>
+
+    <h2>1. Visão Geral</h2>
+    <p>O <b>PokeBat Web Hub</b> é uma plataforma web pessoal e sem fins lucrativos desenvolvida para fins de emulação de jogos e preservação digital. Nós valorizamos sua privacidade: nosso sistema não vende, não rastreia e não compartilha seus dados pessoais com terceiros.</p>
+
+    <h2>2. Dados Coletados e Armazenamento Local</h2>
+    <p>O aplicativo opera de forma <i>stateless</i> (sem retenção de dados em servidores próprios):</p>
+    <ul>
+      <li><b>Saves no Navegador:</b> Seu progresso de jogo (arquivos <code>.srm</code> e <code>.state</code>) é armazenado exclusivamente no armazenamento local (IndexedDB) do seu próprio dispositivo e navegador.</li>
+      <li><b>ROMs em Sessão:</b> Os jogos carregados permanecem apenas na memória RAM da sua aba aberta e são automaticamente destruídos quando o navegador é fechado.</li>
+    </ul>
+
+    <h2>3. Uso da API do Google Drive (Google OAuth)</h2>
+    <p>Caso você opte por utilizar a funcionalidade opcional de sincronização na nuvem conectando sua conta do Google:</p>
+    <ul>
+      <li>Utilizamos exclusivamente o escopo <code>https://www.googleapis.com/auth/drive.file</code>.</li>
+      <li>Isso concede ao aplicativo permissão estrita apenas para criar e gerenciar a pasta <code>PokeBat_Emulator_Saves</code> dentro do seu próprio Google Drive pessoal.</li>
+      <li>O aplicativo <b>NÃO</b> tem acesso e <b>NÃO</b> pode visualizar, ler, modificar ou deletar nenhum outro arquivo do seu Google Drive.</li>
+      <li>Nenhum arquivo ou dado do seu Google Drive passa pelos nossos servidores ou é acessado por terceiros. A comunicação ocorre diretamente entre o seu navegador e os servidores oficiais do Google.</li>
+    </ul>
+
+    <h2>4. Conformidade com a Política de Dados do Google</h2>
+    <p>O uso de informações recebidas por meio das APIs do Google pelo PokeBat Web Hub está em total conformidade com a <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener" style="color: #60a5fa;">Política de Dados do Usuário dos Serviços de API do Google</a>, incluindo os requisitos de Uso Limitado.</p>
+
+    <h2>5. Contato</h2>
+    <p>Se você tiver quaisquer dúvidas sobre esta política de privacidade, pode entrar em contato através do repositório oficial do projeto.</p>
+  </div>
+</body>
+</html>
