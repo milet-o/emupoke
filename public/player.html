@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PokeBat Web Player</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #05070a;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game-container {
+      width: 100%;
+      height: 100%;
+      transition: all 0.2s ease;
+    }
+
+    /* Modos de Visualização Customizados para Telas (NDS / GBA) */
+    body.layout-wide #game-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    body.layout-compact #game-container {
+      width: 82%;
+      height: 92%;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    #status-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #05070a;
+      z-index: 20;
+      gap: 14px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(239, 68, 68, 0.25);
+      border-top-color: #ef4444;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-bar-wrap {
+      width: 300px;
+      height: 8px;
+      background: #1f2937;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
+      transition: width 0.15s ease;
+    }
+
+    #status-text {
+      font-size: 0.98rem;
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    #status-sub {
+      font-size: 0.82rem;
+      color: #9ca3af;
+      max-width: 460px;
+      line-height: 1.4;
+    }
+
+    /* Toast de Notificação de Save no canto da tela */
+    #save-toast {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 9px 15px;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      z-index: 9999;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+
+    #save-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="status-overlay">
+    <div class="spinner" id="spinner"></div>
+    <div id="status-text">Conectando ao PokeBat / MediaFire...</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div id="status-sub">Extraindo link direto da ROM e preparando o emulador...</div>
+  </div>
+
+  <div id="game-container">
+    <div id="game"></div>
+  </div>
+
+  <div id="save-toast">💾 Save sincronizado!</div>
+
+  <script src="/save-manager.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const gameId = params.get('id') || 'custom';
+    const romApiUrl = params.get('rom');
+    const directBlobUrl = params.get('blob');
+    const gameTitle = params.get('title') || 'Pokemon';
+    const consoleParam = (params.get('console') || 'GBA').toUpperCase();
+    const downloadPageUrl = params.get('url') || '';
+    const coverUrl = params.get('cover') || '';
+    const autoLoadType = params.get('autoload') || ''; // 'srm' ou 'state'
+
+    const statusOverlay = document.getElementById('status-overlay');
+    const statusText = document.getElementById('status-text');
+    const statusSub = document.getElementById('status-sub');
+    const progressFill = document.getElementById('progress-fill');
+    const spinner = document.getElementById('spinner');
+    const saveToast = document.getElementById('save-toast');
+
+    let lastSrmSignature = '';
+
+    function showToast(msg, bg = 'rgba(16, 185, 129, 0.95)') {
+      saveToast.textContent = msg;
+      saveToast.style.background = bg;
+      saveToast.classList.add('show');
+      setTimeout(() => saveToast.classList.remove('show'), 3200);
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'SAVE_STATUS', message: msg }, '*');
+      }
+    }
+
+    function resolveCore(sys, filename = '') {
+      if (/\.nds$/i.test(filename) || sys === 'NDS') return 'melonds';
+      if (/\.gbc?$/i.test(filename) || sys === 'GBC' || sys === 'GB') return 'gambatte';
+      return 'mgba';
+    }
+
+    function computeBufferHash(uint8) {
+      if (!uint8 || uint8.length === 0) return '';
+      let nonBlank = 0;
+      let hash = uint8.length;
+      const step = Math.max(1, Math.floor(uint8.length / 512));
+      for (let i = 0; i < uint8.length; i += step) {
+        const b = uint8[i];
+        if (b !== 0x00 && b !== 0xff) nonBlank++;
+        hash = ((hash << 5) - hash + b) | 0;
+      }
+      if (nonBlank === 0) return '';
+      return `${uint8.length}:${hash}`;
+    }
+
+    /**
+     * Salva o progresso no navegador do próprio usuário (IndexedDB) + Google Drive pessoal (se logado)
+     */
+    async function syncSaveToServer(uint8Array, type = 'srm', silent = false) {
+      if (!uint8Array || uint8Array.length === 0) {
+        if (!silent) showToast('⚠️ Nenhum dado de save encontrado ainda.', 'rgba(245, 158, 11, 0.95)');
+        return false;
+      }
+
+      try {
+        const record = await window.userSaveManager.saveGameData({
+          id: gameId,
+          type,
+          bytes: uint8Array,
+          title: gameTitle,
+          console: consoleParam,
+          url: downloadPageUrl,
+          cover: coverUrl
+        });
+
+        const driveSuffix = record.syncedDrive ? ' + ☁️ Google Drive!' : ' (no seu navegador)!';
+        if (!silent) {
+          showToast(
+            type === 'srm'
+              ? `💾 Save (.SRM) salvo${driveSuffix}`
+              : `⚡ Save State (.STATE) salvo${driveSuffix}`
+          );
+        } else {
+          showToast(`💾 Auto-Save (.SRM) salvo${driveSuffix}`);
+        }
+        return true;
+      } catch (e) {
+        console.warn('[USER SAVE ERROR]', e);
+      }
+      return false;
+    }
+
+    /**
+     * Restaura automaticamente o último save (.srm ou .state) do navegador/Google Drive do usuário
+     */
+    async function restoreLocalSavesIfAvailable() {
+      if (!window.EJS_emulator || !window.EJS_emulator.gameManager) return;
+      const gm = window.EJS_emulator.gameManager;
+
+      // 1. Tenta carregar o .SRM (Save nativo do jogo / bateria)
+      try {
+        const buf = await window.userSaveManager.getSaveBytes(gameId, 'srm');
+        if (buf && buf.length > 0 && gm.FS && gm.getSaveFilePath) {
+          const savePath = gm.getSaveFilePath();
+          gm.FS.writeFile(savePath, buf);
+          if (gm.loadSaveFiles) gm.loadSaveFiles();
+          lastSrmSignature = computeBufferHash(buf);
+          showToast('📂 Seu Save (.SRM) foi carregado automaticamente!');
+        }
+      } catch (_) {}
+
+      // 2. Se o usuário clicou especificamente em "Abrir State"
+      if (autoLoadType === 'state') {
+        try {
+          const stBuf = await window.userSaveManager.getSaveBytes(gameId, 'state');
+          if (stBuf && stBuf.length > 0 && gm.loadState) {
+            gm.loadState(stBuf);
+            showToast('⚡ Seu Save State instantâneo foi restaurado!');
+          }
+        } catch (_) {}
+      }
+    }
+
+    /**
+     * Monitora automaticamente quando o jogador salva dentro do menu do próprio Pokémon (START -> SALVAR)
+     */
+    function startAutoSaveWatcher() {
+      setInterval(() => {
+        try {
+          const gm = window.EJS_emulator?.gameManager;
+          if (!gm || !gm.getSaveFile) return;
+          const srmBytes = gm.getSaveFile();
+          const sig = computeBufferHash(srmBytes);
+          if (sig && sig !== lastSrmSignature) {
+            lastSrmSignature = sig;
+            syncSaveToServer(srmBytes, 'srm', true);
+          }
+        } catch (_) {}
+      }, 4000);
+    }
+
+    // Escuta comandos da barra superior do index.html (Salvar .SRM, Quick Save .STATE, Carregar State, Inserir Cheat, Layout)
+    window.addEventListener('message', async (event) => {
+      const data = event.data || {};
+      const gm = window.EJS_emulator?.gameManager;
+
+      if (data.action === 'SAVE_SRM') {
+        if (!gm || !gm.getSaveFile) return showToast('⚠️ O jogo ainda está iniciando...', 'rgba(245, 158, 11, 0.95)');
+        const bytes = gm.getSaveFile();
+        await syncSaveToServer(bytes, 'srm', false);
+      }
+
+      if (data.action === 'SAVE_STATE') {
+        if (!gm || !gm.getState) return showToast('⚠️ O jogo ainda está iniciando...', 'rgba(245, 158, 11, 0.95)');
+        const stateBytes = gm.getState();
+        await syncSaveToServer(stateBytes, 'state', false);
+      }
+
+      if (data.action === 'LOAD_STATE') {
+        try {
+          const stBuf = await window.userSaveManager.getSaveBytes(gameId, 'state');
+          if (!stBuf || stBuf.length === 0) {
+            return showToast('⚠️ Nenhum Save State (.state) salvo para este jogo.', 'rgba(245, 158, 11, 0.95)');
+          }
+          if (gm && gm.loadState) {
+            gm.loadState(stBuf);
+            showToast('⚡ Save State carregado com sucesso!');
+          }
+        } catch (err) {
+          showToast('Erro ao carregar State: ' + err.message, 'rgba(239, 68, 68, 0.95)');
+        }
+      }
+
+      if (data.action === 'IMPORT_SRM_BYTES' && data.bytes) {
+        try {
+          const uint8 = new Uint8Array(data.bytes);
+          if (gm && gm.FS && gm.getSaveFilePath) {
+            gm.FS.writeFile(gm.getSaveFilePath(), uint8);
+            if (gm.loadSaveFiles) gm.loadSaveFiles();
+          }
+          await syncSaveToServer(uint8, 'srm', false);
+          showToast('📥 Arquivo .SRM/.SAV importado! Reinicie a ROM se necessário.');
+        } catch (err) {
+          showToast('Erro ao importar Save: ' + err.message, 'rgba(239, 68, 68, 0.95)');
+        }
+      }
+
+      if (data.action === 'SET_LAYOUT') {
+        document.body.classList.remove('layout-wide', 'layout-compact');
+        if (data.layout === 'compact') document.body.classList.add('layout-compact');
+        if (data.layout === 'wide') document.body.classList.add('layout-wide');
+
+        // Se for MelonDS (NDS), tenta ajustar a opção de screen_layout do core
+        try {
+          if (window.EJS_emulator?.changeSettingOption && data.ndsScreenLayout) {
+            window.EJS_emulator.changeSettingOption('melonds_screen_layout', data.ndsScreenLayout);
+          }
+        } catch (_) {}
+      }
+
+      if (data.action === 'APPLY_CHEAT' && data.code) {
+        try {
+          if (gm && gm.setCheat) {
+            gm.setCheat(data.index || 0, 1, data.code);
+            showToast(`🧬 Cheat "${data.title || 'Código'}" ativado no emulador!`);
+          } else {
+            showToast('📋 Código copiado! Cole no menu "Cheats" da barra inferior do emulador.');
+          }
+        } catch (_) {}
+      }
+    });
+
+    function launchEmulatorWithUrl(finalBlobUrl, detectedName = '') {
+      statusOverlay.style.display = 'none';
+
+      const chosenCore = resolveCore(consoleParam, detectedName || gameTitle);
+      window.EJS_player = '#game';
+      window.EJS_core = chosenCore;
+      window.EJS_gameName = gameTitle;
+      window.EJS_color = '#ef4444';
+      window.EJS_startOnLoaded = true;
+      window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+      window.EJS_gameUrl = finalBlobUrl;
+
+      // Se houver um .srm já salvo no servidor, também podemos informar ao EmulatorJS
+      window.EJS_onGameStart = function () {
+        setTimeout(() => {
+          restoreLocalSavesIfAvailable();
+          startAutoSaveWatcher();
+        }, 600);
+      };
+
+      window.EJS_onSaveUpdate = function () {
+        try {
+          const gm = window.EJS_emulator?.gameManager;
+          if (gm && gm.getSaveFile) {
+            const bytes = gm.getSaveFile();
+            const sig = computeBufferHash(bytes);
+            if (sig && sig !== lastSrmSignature) {
+              lastSrmSignature = sig;
+              syncSaveToServer(bytes, 'srm', true);
+            }
+          }
+        } catch (_) {}
+      };
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+      document.body.appendChild(script);
+    }
+
+    async function downloadAndStart() {
+      if (directBlobUrl) {
+        launchEmulatorWithUrl(directBlobUrl, gameTitle);
+        return;
+      }
+
+      if (!romApiUrl) {
+        statusText.textContent = 'Nenhuma ROM especificada.';
+        spinner.style.display = 'none';
+        return;
+      }
+
+      // Verifica se a ROM já está na memória RAM da aba do navegador (cache temporário enquanto não fechar o navegador)
+      try {
+        const memCached = window.parent?.sessionRomBlobs?.get(romApiUrl);
+        if (memCached && memCached.blob) {
+          const ramBlobUrl = URL.createObjectURL(memCached.blob);
+          launchEmulatorWithUrl(ramBlobUrl, memCached.romName || gameTitle);
+          return;
+        }
+      } catch (_) {}
+
+      try {
+        statusText.textContent = `Baixando "${gameTitle}" (${consoleParam})...`;
+        const response = await fetch(romApiUrl);
+
+        if (!response.ok) {
+          let errMsg = `Erro HTTP ${response.status}`;
+          try {
+            const errJson = await response.json();
+            if (errJson.error) errMsg = errJson.error;
+          } catch (_) {}
+          throw new Error(errMsg);
+        }
+
+        const headerRomName = decodeURIComponent(response.headers.get('X-Rom-Filename') || '');
+        const contentLength = +response.headers.get('Content-Length') || 0;
+        const reader = response.body.getReader();
+        let receivedLength = 0;
+        const chunks = [];
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          receivedLength += value.length;
+
+          if (contentLength > 0) {
+            const pct = Math.min(100, Math.round((receivedLength / contentLength) * 100));
+            progressFill.style.width = pct + '%';
+            statusSub.textContent = `${(receivedLength / 1024 / 1024).toFixed(2)} MB / ${(contentLength / 1024 / 1024).toFixed(2)} MB (${pct}%)`;
+          } else {
+            statusSub.textContent = `${(receivedLength / 1024 / 1024).toFixed(2)} MB recebidos...`;
+          }
+        }
+
+        statusText.textContent = `Iniciando emulador (${consoleParam})...`;
+        const blob = new Blob(chunks);
+
+        // Guarda na memória da sessão do navegador (some assim que fechar a aba!)
+        try {
+          if (window.parent?.sessionRomBlobs) {
+            window.parent.sessionRomBlobs.set(romApiUrl, { blob, romName: headerRomName || gameTitle });
+          }
+        } catch (_) {}
+
+        const blobUrl = URL.createObjectURL(blob);
+        launchEmulatorWithUrl(blobUrl, headerRomName || gameTitle);
+      } catch (err) {
+        spinner.style.display = 'none';
+        statusText.textContent = 'Não foi possível carregar o link direto automaticamente';
+        statusSub.innerHTML = `<span style="color:#f87171">${err.message}</span>`;
+      }
+    }
+
+    downloadAndStart();
+  </script>
+</body>
+</html>
