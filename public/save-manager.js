@@ -9,7 +9,7 @@ const DB_VERSION = 1;
 const STORE_SAVES = 'saves';
 const GDRIVE_FOLDER_NAME = 'PokeBat_Emulator_Saves';
 const GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile';
-window.DEFAULT_GOOGLE_CLIENT_ID = '387974378779-jfl0kd70i9b1giuqhkipholr557ueomv.apps.googleusercontent.com';
+window.DEFAULT_GOOGLE_CLIENT_ID = '387974378779-ij7r3d8rlpr7idksd2erbkf0qd57dqfc.apps.googleusercontent.com';
 
 class UserSaveManager {
   constructor() {
