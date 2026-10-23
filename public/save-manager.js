@@ -14,9 +14,9 @@ window.DEFAULT_GOOGLE_CLIENT_ID = '387974378779-ij7r3d8rlpr7idksd2erbkf0qd57dqfc
 class UserSaveManager {
   constructor() {
     this.dbPromise = this._initDB();
-    this.accessToken = sessionStorage.getItem('gdrive_access_token') || '';
-    this.userProfile = JSON.parse(sessionStorage.getItem('gdrive_user_profile') || 'null');
-    this.folderId = sessionStorage.getItem('gdrive_folder_id') || '';
+    this.accessToken = localStorage.getItem('gdrive_access_token') || sessionStorage.getItem('gdrive_access_token') || '';
+    this.userProfile = JSON.parse(localStorage.getItem('gdrive_user_profile') || sessionStorage.getItem('gdrive_user_profile') || 'null');
+    this.folderId = localStorage.getItem('gdrive_folder_id') || sessionStorage.getItem('gdrive_folder_id') || '';
     this.tokenClient = null;
   }
 
@@ -133,8 +133,11 @@ class UserSaveManager {
       try {
         await this._uploadToGoogleDrive(existing, type, uint8, targetSlot);
         existing.syncedDrive = true;
+        delete existing.driveError;
       } catch (err) {
-        console.warn('[Google Drive Sync Warning]', err);
+        console.error('[Google Drive Sync Error]', err);
+        existing.syncedDrive = false;
+        existing.driveError = err.message;
       }
     }
 
@@ -285,6 +288,7 @@ class UserSaveManager {
             return reject(new Error(resp.error_description || resp.error));
           }
           this.accessToken = resp.access_token;
+          localStorage.setItem('gdrive_access_token', this.accessToken);
           sessionStorage.setItem('gdrive_access_token', this.accessToken);
 
           try {
@@ -293,6 +297,7 @@ class UserSaveManager {
             });
             if (uRes.ok) {
               this.userProfile = await uRes.json();
+              localStorage.setItem('gdrive_user_profile', JSON.stringify(this.userProfile));
               sessionStorage.setItem('gdrive_user_profile', JSON.stringify(this.userProfile));
             }
           } catch (_) {}
@@ -317,6 +322,9 @@ class UserSaveManager {
     this.accessToken = '';
     this.userProfile = null;
     this.folderId = '';
+    localStorage.removeItem('gdrive_access_token');
+    localStorage.removeItem('gdrive_user_profile');
+    localStorage.removeItem('gdrive_folder_id');
     sessionStorage.removeItem('gdrive_access_token');
     sessionStorage.removeItem('gdrive_user_profile');
     sessionStorage.removeItem('gdrive_folder_id');
@@ -338,6 +346,7 @@ class UserSaveManager {
     const searchData = await searchRes.json();
     if (searchData.files && searchData.files.length > 0) {
       this.folderId = searchData.files[0].id;
+      localStorage.setItem('gdrive_folder_id', this.folderId);
       sessionStorage.setItem('gdrive_folder_id', this.folderId);
       return this.folderId;
     }
@@ -355,6 +364,7 @@ class UserSaveManager {
     });
     const created = await createRes.json();
     this.folderId = created.id;
+    localStorage.setItem('gdrive_folder_id', this.folderId);
     sessionStorage.setItem('gdrive_folder_id', this.folderId);
     return this.folderId;
   }
@@ -378,19 +388,27 @@ class UserSaveManager {
   }
 
   async _uploadToGoogleDrive(record, type, uint8, slot = 0) {
+    if (!this.isLoggedIn()) return;
     const folderId = await this._ensureDriveFolder();
     const targetSlot = parseInt(slot, 10) || 0;
     const fileName = type === 'state'
       ? (targetSlot > 0 ? `${record.id}__slot${targetSlot}.state` : `${record.id}.state`)
       : `${record.id}.${type}`;
 
-    // Verifica se o arquivo já existe na pasta do usuário
-    const q = encodeURIComponent(`name = '${fileName}' and '${folderId}' in parents and trashed = false`);
-    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
-      headers: { Authorization: `Bearer ${this.accessToken}` }
-    });
-    const searchData = await searchRes.json();
-    const existingFileId = searchData.files?.[0]?.id;
+    console.log(`[Google Drive] Enviando ${fileName} (${uint8.length} bytes)...`);
+
+    // 1. Procura se o arquivo já existe no Drive
+    let existingFileId = null;
+    try {
+      const q = encodeURIComponent(`name = '${fileName}' and '${folderId}' in parents and trashed = false`);
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
+        headers: { Authorization: `Bearer ${this.accessToken}` }
+      });
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        existingFileId = searchData.files?.[0]?.id || null;
+      }
+    } catch (_) {}
 
     const metadata = {
       name: fileName,
@@ -404,27 +422,55 @@ class UserSaveManager {
         updatedAt: record.updatedAt
       })
     };
-    if (!existingFileId) {
+
+    let targetFileId = existingFileId;
+
+    if (existingFileId) {
+      // Atualiza metadados do arquivo existente
+      await fetch(`https://www.googleapis.com/drive/v3/files/${existingFileId}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(metadata)
+      });
+    } else {
+      // Cria novo arquivo com metadados
       metadata.parents = [folderId];
+      const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(metadata)
+      });
+      if (!createRes.ok) {
+        const errTxt = await createRes.text();
+        throw new Error(`Erro ao criar arquivo no Drive (${createRes.status}): ${errTxt}`);
+      }
+      const created = await createRes.json();
+      targetFileId = created.id;
     }
 
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-    form.append('file', new Blob([uint8], { type: 'application/octet-stream' }));
-
-    const uploadUrl = existingFileId
-      ? `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart`
-      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-
-    const upRes = await fetch(uploadUrl, {
-      method: existingFileId ? 'PATCH' : 'POST',
-      headers: { Authorization: `Bearer ${this.accessToken}` },
-      body: form
+    // 2. Envia os bytes reais usando PATCH uploadType=media (binário puro, sem multipart/form-data inválido)
+    const uploadRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${targetFileId}?uploadType=media`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/octet-stream'
+      },
+      body: uint8
     });
 
-    if (!upRes.ok) {
-      throw new Error(`Erro ao enviar ${fileName} ao Google Drive (${upRes.status})`);
+    if (!uploadRes.ok) {
+      const errTxt = await uploadRes.text();
+      throw new Error(`Erro ao enviar conteúdo ao Drive (${uploadRes.status}): ${errTxt}`);
     }
+
+    console.log(`[Google Drive] Sucesso! ${fileName} salvo no Drive.`);
+    return targetFileId;
   }
 
   async pushAllLocalToGoogleDrive() {
@@ -459,41 +505,71 @@ class UserSaveManager {
 
   async pullFromGoogleDrive() {
     if (!this.isLoggedIn()) return 0;
-    const folderId = await this._ensureDriveFolder();
-    const q = encodeURIComponent(`'${folderId}' in parents and trashed = false`);
-    const listRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,description,modifiedTime,size)`,
-      { headers: { Authorization: `Bearer ${this.accessToken}` } }
-    );
-    if (!listRes.ok) return 0;
-    const data = await listRes.json();
-    const files = data.files || [];
-    let count = 0;
+    try {
+      const folderId = await this._ensureDriveFolder();
+      let files = [];
 
-    for (const f of files) {
-      const match = f.name.match(/^(.+?)(?:__slot(\d+))?\.(srm|state)$/i);
-      if (!match) continue;
-      const gameId = match[1];
-      const slotNum = match[2] !== undefined ? parseInt(match[2], 10) : 0;
-      const type = match[3].toLowerCase();
+      // 1. Procura primeiro dentro da pasta PokeBat_Emulator_Saves
+      if (folderId) {
+        try {
+          const qFolder = encodeURIComponent(`'${folderId}' in parents and trashed = false`);
+          const r1 = await fetch(
+            `https://www.googleapis.com/drive/v3/files?q=${qFolder}&fields=files(id,name,description,modifiedTime,size)&pageSize=100`,
+            { headers: { Authorization: `Bearer ${this.accessToken}` } }
+          );
+          if (r1.ok) {
+            const d1 = await r1.json();
+            files = d1.files || [];
+          }
+        } catch (_) {}
+      }
 
-      let meta = {};
-      try {
-        meta = JSON.parse(f.description || '{}');
-      } catch (_) {}
+      // 2. Se não encontrou na pasta, faz busca geral no Drive
+      if (files.length === 0) {
+        try {
+          const qBroad = encodeURIComponent(`trashed = false and (name contains 'srm' or name contains 'state')`);
+          const r2 = await fetch(
+            `https://www.googleapis.com/drive/v3/files?q=${qBroad}&fields=files(id,name,description,modifiedTime,size)&pageSize=100`,
+            { headers: { Authorization: `Bearer ${this.accessToken}` } }
+          );
+          if (r2.ok) {
+            const d2 = await r2.json();
+            files = d2.files || [];
+          }
+        } catch (_) {}
+      }
 
-      const existing = (await this.getRecord(gameId)) || {
-        id: gameId,
-        title: meta.title || gameId,
-        console: meta.console || 'GBA',
-        downloadPageUrl: meta.downloadPageUrl || '',
-        cover: meta.cover || '',
-        updatedAt: meta.updatedAt || f.modifiedTime || new Date().toISOString(),
-        stateSlots: {},
-        syncedDrive: true
-      };
+      console.log(`[Google Drive] Arquivos encontrados na nuvem: ${files.length}`);
+      let count = 0;
 
-      if (!existing.stateSlots) existing.stateSlots = {};
+      for (const f of files) {
+        const match = f.name.match(/^(.+?)(?:__slot(\d+))?\.(srm|state)$/i);
+        if (!match) continue;
+        const gameId = match[1];
+        const slotNum = match[2] !== undefined ? parseInt(match[2], 10) : 0;
+        const type = match[3].toLowerCase();
+
+        let meta = {};
+        try {
+          meta = JSON.parse(f.description || '{}');
+        } catch (_) {}
+
+        const existing = (await this.getRecord(gameId)) || {
+          id: gameId,
+          title: meta.title || gameId,
+          console: meta.console || 'GBA',
+          downloadPageUrl: meta.downloadPageUrl || '',
+          cover: meta.cover || '',
+          updatedAt: meta.updatedAt || f.modifiedTime || new Date().toISOString(),
+          stateSlots: {},
+          syncedDrive: true
+        };
+
+        if (!existing.stateSlots) existing.stateSlots = {};
+        if (meta.title && (existing.title === gameId || !existing.title)) existing.title = meta.title;
+        if (meta.cover && !existing.cover) existing.cover = meta.cover;
+        if (meta.console && !existing.console) existing.console = meta.console;
+        if (meta.downloadPageUrl && !existing.downloadPageUrl) existing.downloadPageUrl = meta.downloadPageUrl;
 
       const binRes = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`, {
         headers: { Authorization: `Bearer ${this.accessToken}` }
@@ -518,6 +594,10 @@ class UserSaveManager {
       count++;
     }
     return count;
+    } catch (err) {
+      console.warn('[Drive Pull Error]', err);
+      return 0;
+    }
   }
 }
 

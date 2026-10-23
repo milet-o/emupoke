@@ -5,15 +5,7 @@ const zlib = require('zlib');
 const { execFile, spawn } = require('child_process');
 const { URL } = require('url');
 
-let ngrok;
-try {
-  ngrok = require('@ngrok/ngrok');
-} catch (_) {}
-
 const PORT = process.env.PORT || 3000;
-const NGROK_AUTHTOKEN = process.env.NGROK_AUTHTOKEN || '3IscPmrJGEr1JvCKtkQWo0RW6bl_3K6qCGtyEMbVhmMcLdd4h';
-const NGROK_DOMAIN = process.env.NGROK_DOMAIN || 'tribute-gents-devotion.ngrok-free.dev';
-let activeNgrokUrl = `https://${NGROK_DOMAIN}`;
 
 const CACHE_DIR = path.join(__dirname, 'rom_cache');
 const SAVES_DIR = path.join(__dirname, 'saves');
@@ -1231,21 +1223,19 @@ const server = http.createServer(async (req, res) => {
 
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, ngrok-skip-browser-warning');
-  res.setHeader('ngrok-skip-browser-warning', 'true');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     return res.end();
   }
 
-  // API: Status e URL do Túnel ngrok / Render
+  // API: Status do Servidor
   if (pathname === '/api/tunnel') {
     const proto = req.headers['x-forwarded-proto'] || 'http';
-    const host = req.headers.host;
-    const publicUrl = process.env.RENDER ? `${proto}://${host}` : activeNgrokUrl;
+    const host = req.headers.host || `localhost:${PORT}`;
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    return res.end(JSON.stringify({ active: true, url: publicUrl }));
+    return res.end(JSON.stringify({ active: false, url: `${proto}://${host}` }));
   }
 
   // 1. API: Listar Jogos sob demanda por Fonte (`source=pokebat` ou `source=hackdex`)
@@ -1486,11 +1476,6 @@ const server = http.createServer(async (req, res) => {
     return fs.createReadStream(filePath).pipe(res);
   }
 
-  if (pathname === '/api/saves/open-folder' && req.method === 'POST') {
-    execFile('explorer.exe', [SAVES_DIR], () => {});
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    return res.end(JSON.stringify({ ok: true, path: SAVES_DIR }));
-  }
 
   // 5. API: Inspecionar Pacote de ROM (100% em RAM, Zero Disco)
   if (pathname === '/api/rom-inspect') {
@@ -1697,26 +1682,8 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, async () => {
   console.log(`\n======================================================`);
-  console.log(`🎮 PokeBat & HackDex Web Hub rodando em: http://localhost:${PORT}`);
-  console.log(`💾 Cofre de Saves Local: ${SAVES_DIR}`);
+  console.log(`🎮 PokeMule Web Hub rodando em: http://localhost:${PORT}`);
   console.log(`📦 Cache de ROMs Local: ${CACHE_DIR}`);
   console.log(`🧬 ROMs Base (Auto-Patcher HackDex): ${BASE_ROMS_DIR}`);
-
-  if (ngrok && !process.env.RENDER) {
-    try {
-      console.log(`🔄 Conectando túnel ngrok em https://${NGROK_DOMAIN}...`);
-      const session = await ngrok.forward({
-        addr: PORT,
-        authtoken: NGROK_AUTHTOKEN,
-        domain: NGROK_DOMAIN
-      });
-      activeNgrokUrl = session.url();
-      console.log(`🚀 TÚNEL NGROK ONLINE: ${activeNgrokUrl}`);
-      console.log(`Compartilhe este link com quem quiser para jogar online!`);
-    } catch (err) {
-      console.warn(`[NGROK] Aviso: ${err.message}`);
-    }
-  }
-
   console.log(`======================================================\n`);
 });

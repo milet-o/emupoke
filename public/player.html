@@ -215,11 +215,15 @@
 
         const driveSuffix = record.syncedDrive ? ' + ☁️ Google Drive!' : ' (no seu navegador)!';
         if (!silent) {
-          showToast(
-            type === 'srm'
-              ? `💾 Save (.SRM) salvo${driveSuffix}`
-              : `⚡ Save State (Slot ${slot}) salvo${driveSuffix}`
-          );
+          if (record.driveError && (record.driveError.includes('has not been used') || record.driveError.includes('403'))) {
+            showToast('⚠️ Salvo no navegador! Ative a Google Drive API no console do Google.', 'rgba(239, 68, 68, 0.95)');
+          } else {
+            showToast(
+              type === 'srm'
+                ? `💾 Save (.SRM) salvo${driveSuffix}`
+                : `⚡ Save State (Slot ${slot}) salvo${driveSuffix}`
+            );
+          }
         } else {
           showToast(`💾 Auto-Save (.SRM) salvo${driveSuffix}`);
         }
@@ -440,14 +444,18 @@
       // CRÍTICO PARA MOBILE (iOS Safari / Android Chrome): desativa SharedArrayBuffer/pthreads
       // para evitar travamentos e tela preta em celulares!
       window.EJS_threads = false;
+      window.EJS_volume = 1.0;
+      window.EJS_mute = false;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
       window.EJS_gameUrl = finalBlobUrl;
 
       // Se houver um .srm já salvo, restaura automaticamente ao iniciar
       window.EJS_onGameStart = function () {
+        unlockMobileAudio();
         setTimeout(() => {
           restoreLocalSavesIfAvailable();
           startAutoSaveWatcher();
+          unlockMobileAudio();
         }, 600);
       };
 
@@ -469,6 +477,34 @@
       script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
       document.body.appendChild(script);
     }
+
+    function unlockMobileAudio() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          if (!window.__globalAudioContext) {
+            window.__globalAudioContext = new AudioCtx();
+          }
+          if (window.__globalAudioContext.state === 'suspended') {
+            window.__globalAudioContext.resume();
+          }
+        }
+        if (window.EJS_emulator?.audioContext && window.EJS_emulator.audioContext.state === 'suspended') {
+          window.EJS_emulator.audioContext.resume();
+        }
+        if (window.EJS_emulator?.gameManager?.audioContext && window.EJS_emulator.gameManager.audioContext.state === 'suspended') {
+          window.EJS_emulator.gameManager.audioContext.resume();
+        }
+        if (window.EJS_emulator?.setVolume) {
+          window.EJS_emulator.setVolume(1.0);
+        }
+      } catch (_) {}
+    }
+
+    ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, unlockMobileAudio, { passive: true });
+      document.addEventListener(evt, unlockMobileAudio, { passive: true });
+    });
 
     async function downloadAndStart() {
       if (directBlobUrl) {

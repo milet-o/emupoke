@@ -1,14 +1,12 @@
 {
-  "name": "pokebat-web-emulator",
+  "name": "pokemule-web-emulator",
   "version": "1.0.0",
-  "description": "Emulador Web integrado com PokeBat.net e túnel ngrok",
+  "description": "PokeMule - Emulador Web integrado com PokeBat.net e HackDex.app",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "tunnel": "node tunnel.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "@ngrok/ngrok": "^1.4.1",
     "cheerio": "^1.0.0"
   }
 }

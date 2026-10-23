@@ -9,8 +9,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PokeMule" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
   <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-  <link rel="apple-touch-icon" href="/icon.svg" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <title>PokeMule — Pokédex & Emulador Web Pokémon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1221,6 +1222,10 @@
 
       <!-- Direita: Ações Rápidas sem Poluir a Tela -->
       <div class="nav-right">
+        <button class="btn btn-tactile" id="pwa-install-nav-btn" onclick="triggerPwaInstall()" style="display: none;" title="Instalar PokeMule no seu celular ou PC">
+          📲 Instalar App
+        </button>
+
         <button class="btn btn-tactile" id="toggle-tools-btn" onclick="toggleQuickDrawer('tools-drawer', this)" title="Colar link direto ou abrir arquivo ROM do seu PC">
           ➕ Link / ROM
         </button>
@@ -1258,8 +1263,11 @@
       <div class="modal-header">
         <h3 id="vault-modal-title">💾 Seus Saves & Estados de Jogo (PokeMule)</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn btn-tactile" id="force-sync-btn" style="padding: 5px 10px; font-size: 0.76rem; display: none;" onclick="forceSyncFromGoogleDrive(this)" title="Sincronizar seus saves com a nuvem agora">
+            🔄 Sincronizar Nuvem
+          </button>
           <button class="btn btn-drive" id="sync-drive-btn" style="padding: 5px 12px; font-size: 0.76rem;" onclick="handleGoogleDriveClick()">
-            ☁️ Sincronizar Google Drive
+            ☁️ Conectar Google Drive
           </button>
           <button class="btn btn-tactile" onclick="closeSavesVaultModal()" style="padding: 5px 10px; font-size: 0.8rem;">✕ Fechar</button>
         </div>
@@ -1378,7 +1386,7 @@
 
     <div class="player-body">
       <div id="emulator-stage">
-        <iframe id="emulator-iframe" allow="autoplay; fullscreen; gamepad"></iframe>
+        <iframe id="emulator-iframe" allow="autoplay; fullscreen; gamepad; cross-origin-isolated"></iframe>
       </div>
 
       <aside id="cheats-drawer">
@@ -1497,6 +1505,8 @@
     function updateGoogleDriveButtons() {
       const logged = window.userSaveManager.isLoggedIn();
       const profile = window.userSaveManager.userProfile;
+      const forceSyncBtn = document.getElementById('force-sync-btn');
+
       if (logged) {
         const name = profile?.given_name || profile?.name || 'Conectado';
         if (googleDriveBtn) {
@@ -1507,6 +1517,9 @@
           syncDriveBtn.innerHTML = `🚪 Deslogar (${name})`;
           syncDriveBtn.title = `Desconectar Google Drive`;
         }
+        if (forceSyncBtn) {
+          forceSyncBtn.style.display = 'inline-flex';
+        }
       } else {
         if (googleDriveBtn) {
           googleDriveBtn.innerHTML = '☁️ Google Drive';
@@ -1515,6 +1528,42 @@
         if (syncDriveBtn) {
           syncDriveBtn.innerHTML = '☁️ Conectar Google Drive';
           syncDriveBtn.title = 'Conectar sua conta do Google Drive';
+        }
+        if (forceSyncBtn) {
+          forceSyncBtn.style.display = 'none';
+        }
+      }
+    }
+
+    async function forceSyncFromGoogleDrive(btnEl) {
+      if (!window.userSaveManager.isLoggedIn()) {
+        return handleGoogleDriveClick();
+      }
+      const orig = btnEl ? btnEl.innerHTML : '';
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '⏳ Sincronizando...';
+      }
+      try {
+        const count = await window.userSaveManager.pullFromGoogleDrive();
+        await window.userSaveManager.pushAllLocalToGoogleDrive();
+        await loadSavesVault(false);
+        await loadGames();
+        if (count > 0) {
+          alert(`Sincronização concluída!\n${count} arquivo(s) de save foram baixados e restaurados do seu Google Drive.`);
+        } else {
+          alert('Nenhum save encontrado no seu Google Drive ainda.\n\nQuando você salvar qualquer jogo (START -> SALVAR ou "Salvar .SRM" / "Salvar State"), o PokeMule enviará o arquivo direto para a sua conta do Google Drive!');
+        }
+      } catch (err) {
+        if (err.message.includes('Google Drive API has not been used') || err.message.includes('disabled') || err.message.includes('403')) {
+          alert('⚠️ Falta apenas 1 passo na sua conta Google!\n\nA "Google Drive API" ainda não foi ativada no seu projeto do Google Cloud.\n\nAbra este link no navegador e clique no botão azul "ATIVAR" (Enable):\nhttps://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=387974378779\n\nAssim que você clicar em Ativar, aguarde 30 segundos e clique em "Sincronizar Nuvem" de novo que os saves vão subir na hora!');
+        } else {
+          alert('Erro ao sincronizar com o Google Drive: ' + err.message);
+        }
+      } finally {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = orig;
         }
       }
     }
@@ -1526,7 +1575,7 @@
         if (confirm(`Você está conectado ao Google Drive como "${name}". Deseja deslogar?`)) {
           window.userSaveManager.logoutGoogle();
           updateGoogleDriveButtons();
-          await loadSavesVault();
+          await loadSavesVault(false);
           alert('Você foi desconectado do Google Drive.');
         }
         return;
@@ -1535,7 +1584,7 @@
       try {
         await window.userSaveManager.loginWithGoogle();
         updateGoogleDriveButtons();
-        await loadSavesVault();
+        await loadSavesVault(true);
         await loadGames();
       } catch (err) {
         if (err.message === 'MISSING_CLIENT_ID') {
@@ -1600,10 +1649,22 @@
     }
 
     // Carrega o Cofre de Saves no Modal Flutuante
-    async function loadSavesVault() {
+    async function loadSavesVault(autoPull = true) {
       try {
         updateGoogleDriveButtons();
-        const saves = await window.userSaveManager.listAllSaves();
+        let saves = await window.userSaveManager.listAllSaves();
+
+        // Se o usuário estiver logado no Google Drive mas o navegador estiver sem saves (ex: limpou cookies/trocou de aparelho),
+        // busca e restaura automaticamente os saves do Google Drive!
+        if (autoPull && window.userSaveManager.isLoggedIn() && saves.length === 0) {
+          try {
+            const pulled = await window.userSaveManager.pullFromGoogleDrive();
+            if (pulled > 0) {
+              saves = await window.userSaveManager.listAllSaves();
+            }
+          } catch (_) {}
+        }
+
         userSavedGameIds = new Set(saves.map(s => s.id));
         if (savesCountBadge) savesCountBadge.textContent = saves.length;
 
@@ -1622,16 +1683,28 @@
       if (vaultModalTitle) vaultModalTitle.innerHTML = '💾 Seus Saves & Estados de Jogo (PokeMule)';
 
       if (!saves || saves.length === 0) {
+        const isLogged = window.userSaveManager.isLoggedIn();
+        const profile = window.userSaveManager.userProfile;
+        const name = profile?.given_name || profile?.name || 'sua conta';
+
         vaultModalBody.innerHTML = `
           <div style="text-align:center; padding:36px 16px; color:var(--text-muted);">
             <div style="font-size:2.2rem; margin-bottom:10px;">🎮</div>
             <h4 style="color:var(--text); font-size:1.05rem; margin-bottom:6px;">Nenhum save encontrado neste navegador</h4>
             <p style="font-size:0.84rem; max-width:440px; margin:0 auto 18px; line-height:1.45;">
-              Quando você jogar qualquer Pokémon e salvar no jogo (START -> SALVAR) ou fizer um Save State, ele aparecerá aqui com slots e opções de backup!
+              ${isLogged
+                ? `Você está conectado ao Google Drive como <b>${name}</b>. Clique abaixo para buscar seus saves na sua nuvem:`
+                : `Quando você jogar qualquer Pokémon e salvar no jogo (START -> SALVAR) ou fizer um Save State, ele aparecerá aqui com slots e opções de backup!`
+              }
             </p>
-            <button class="btn btn-drive" onclick="handleGoogleDriveClick()">
-              ☁️ Conectar Google Drive para puxar meus saves
-            </button>
+            ${isLogged
+              ? `<button class="btn btn-drive" onclick="forceSyncFromGoogleDrive(this)">
+                   🔄 Puxar Meus Saves do Google Drive Agora
+                 </button>`
+              : `<button class="btn btn-drive" onclick="handleGoogleDriveClick()">
+                   ☁️ Conectar Google Drive para puxar meus saves
+                 </button>`
+            }
           </div>
         `;
         return;
@@ -2219,6 +2292,44 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       });
+    }
+
+    // Gerenciamento de Instalação PWA
+    let deferredPwaPrompt = null;
+    const pwaBtn = document.getElementById('pwa-install-nav-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPwaPrompt = e;
+      if (pwaBtn) pwaBtn.style.display = 'inline-flex';
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPwaPrompt = null;
+      if (pwaBtn) pwaBtn.style.display = 'none';
+    });
+
+    if (window.innerWidth <= 820 && pwaBtn) {
+      pwaBtn.style.display = 'inline-flex';
+    }
+
+    function triggerPwaInstall() {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        deferredPwaPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            if (pwaBtn) pwaBtn.style.display = 'none';
+          }
+          deferredPwaPrompt = null;
+        });
+      } else {
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        if (isIos) {
+          alert('📲 Como instalar no iPhone (Safari):\n\n1. Toque no ícone de Compartilhar (quadrado com seta para cima na barra do Safari).\n2. Toque em "Adicionar à Tela de Início".\n3. Pronto! O PokeMule abrirá como app sem a barra do navegador.');
+        } else {
+          alert('📲 Como instalar no Android (Chrome):\n\n1. Toque nos 3 pontinhos (⋮) no topo do Chrome.\n2. Toque em "Instalar aplicativo" ou "Adicionar à tela inicial".\n3. Pronto! O PokeMule abrirá como app.');
+        }
+      }
     }
 
     loadSavesVault();
