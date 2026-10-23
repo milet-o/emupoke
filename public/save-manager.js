@@ -60,19 +60,33 @@ class UserSaveManager {
       const tx = db.transaction(STORE_SAVES, 'readonly');
       const req = tx.objectStore(STORE_SAVES).getAll();
       req.onsuccess = () => {
-        const list = (req.result || []).map(r => ({
-          id: r.id,
-          title: r.title || r.id,
-          console: r.console || 'GBA',
-          downloadPageUrl: r.downloadPageUrl || '',
-          cover: r.cover || '',
-          updatedAt: r.updatedAt || new Date().toISOString(),
-          hasSrm: !!(r.srmBytes && r.srmBytes.byteLength > 0),
-          srmSize: r.srmBytes ? r.srmBytes.byteLength : 0,
-          hasState: !!(r.stateBytes && r.stateBytes.byteLength > 0),
-          stateSize: r.stateBytes ? r.stateBytes.byteLength : 0,
-          syncedDrive: !!r.syncedDrive
-        }));
+        const list = (req.result || []).map(r => {
+          const slots = r.stateSlots || {};
+          if (r.stateBytes && !slots[0]) {
+            slots[0] = {
+              bytes: r.stateBytes,
+              size: r.stateBytes.byteLength,
+              updatedAt: r.updatedAt
+            };
+          }
+          const slotNumbers = Object.keys(slots).map(Number).sort();
+          return {
+            id: r.id,
+            title: r.title || r.id,
+            console: r.console || 'GBA',
+            downloadPageUrl: r.downloadPageUrl || '',
+            cover: r.cover || '',
+            updatedAt: r.updatedAt || new Date().toISOString(),
+            srmUpdatedAt: r.srmUpdatedAt || r.updatedAt,
+            hasSrm: !!(r.srmBytes && r.srmBytes.byteLength > 0),
+            srmSize: r.srmBytes ? r.srmBytes.byteLength : 0,
+            hasState: slotNumbers.length > 0,
+            slotsCount: slotNumbers.length,
+            slotNumbers,
+            stateSlots: slots,
+            syncedDrive: !!r.syncedDrive
+          };
+        });
         list.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         resolve(list);
       };
@@ -80,32 +94,44 @@ class UserSaveManager {
     });
   }
 
-  async saveGameData({ id, type, bytes, title, console: sys, url, cover }) {
+  async saveGameData({ id, type, bytes, title, console: sys, url, cover, slot = 0 }) {
     const uint8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     const existing = (await this.getRecord(id)) || {
       id,
       title: title || id,
       console: sys || 'GBA',
       downloadPageUrl: url || '',
-      cover: cover || ''
+      cover: cover || '',
+      stateSlots: {}
     };
 
+    if (!existing.stateSlots) existing.stateSlots = {};
     existing.title = title || existing.title;
     existing.console = sys || existing.console;
     if (url) existing.downloadPageUrl = url;
     if (cover) existing.cover = cover;
     existing.updatedAt = new Date().toISOString();
 
+    const targetSlot = parseInt(slot, 10) || 0;
+
     if (type === 'srm') {
       existing.srmBytes = uint8.slice().buffer;
+      existing.srmUpdatedAt = new Date().toISOString();
     } else if (type === 'state') {
-      existing.stateBytes = uint8.slice().buffer;
+      existing.stateSlots[targetSlot] = {
+        bytes: uint8.slice().buffer,
+        size: uint8.byteLength,
+        updatedAt: new Date().toISOString()
+      };
+      if (targetSlot === 0) {
+        existing.stateBytes = uint8.slice().buffer;
+      }
     }
 
     // Se estiver logado no Google Drive, sincroniza na nuvem do próprio usuário
     if (this.isLoggedIn()) {
       try {
-        await this._uploadToGoogleDrive(existing, type, uint8);
+        await this._uploadToGoogleDrive(existing, type, uint8, targetSlot);
         existing.syncedDrive = true;
       } catch (err) {
         console.warn('[Google Drive Sync Warning]', err);
@@ -116,11 +142,11 @@ class UserSaveManager {
     return existing;
   }
 
-  async getSaveBytes(gameId, type = 'srm') {
+  async getSaveBytes(gameId, type = 'srm', slot = 0) {
     let record = await this.getRecord(gameId);
 
     // Se não tiver localmente mas estiver logado no Google Drive, tenta puxar do Drive
-    if ((!record || (type === 'srm' && !record.srmBytes) || (type === 'state' && !record.stateBytes)) && this.isLoggedIn()) {
+    if (!record && this.isLoggedIn()) {
       try {
         await this.pullFromGoogleDrive();
         record = await this.getRecord(gameId);
@@ -128,18 +154,95 @@ class UserSaveManager {
     }
 
     if (!record) return null;
-    const buf = type === 'srm' ? record.srmBytes : record.stateBytes;
-    return buf ? new Uint8Array(buf) : null;
+
+    if (type === 'srm') {
+      return record.srmBytes ? new Uint8Array(record.srmBytes) : null;
+    }
+
+    const targetSlot = parseInt(slot, 10) || 0;
+    const slotObj = record.stateSlots?.[targetSlot];
+    if (slotObj?.bytes) {
+      return new Uint8Array(slotObj.bytes);
+    }
+    if (targetSlot === 0 && record.stateBytes) {
+      return new Uint8Array(record.stateBytes);
+    }
+    return null;
   }
 
   async deleteSave(gameId) {
+    return this.deleteGame(gameId);
+  }
+
+  async deleteGame(gameId) {
     const db = await this.dbPromise;
-    return new Promise((resolve, reject) => {
+    const ok = await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_SAVES, 'readwrite');
       const req = tx.objectStore(STORE_SAVES).delete(gameId);
       req.onsuccess = () => resolve(true);
       req.onerror = () => reject(req.error);
     });
+
+    if (this.isLoggedIn()) {
+      this._deleteDriveFileByName(`${gameId}.srm`);
+      this._deleteDriveFileByName(`${gameId}.state`);
+      for (let s = 0; s <= 3; s++) {
+        this._deleteDriveFileByName(`${gameId}__slot${s}.state`);
+      }
+    }
+    return ok;
+  }
+
+  async deleteSrm(gameId) {
+    const record = await this.getRecord(gameId);
+    if (!record) return;
+
+    record.srmBytes = null;
+    delete record.srmUpdatedAt;
+    record.updatedAt = new Date().toISOString();
+
+    const hasAnyState = Object.keys(record.stateSlots || {}).length > 0 || !!record.stateBytes;
+    if (!hasAnyState) {
+      await this.deleteGame(gameId);
+    } else {
+      await this.putRecord(record);
+    }
+
+    if (this.isLoggedIn()) {
+      this._deleteDriveFileByName(`${gameId}.srm`);
+    }
+    return true;
+  }
+
+  async deleteStateSlot(gameId, slot = 0) {
+    const record = await this.getRecord(gameId);
+    if (!record) return;
+
+    const targetSlot = parseInt(slot, 10) || 0;
+    if (record.stateSlots) {
+      delete record.stateSlots[targetSlot];
+    }
+    if (targetSlot === 0) {
+      record.stateBytes = null;
+    }
+    record.updatedAt = new Date().toISOString();
+
+    const hasAnyState = Object.keys(record.stateSlots || {}).length > 0 || !!record.stateBytes;
+    const hasSrm = !!(record.srmBytes && record.srmBytes.byteLength > 0);
+
+    if (!hasAnyState && !hasSrm) {
+      await this.deleteGame(gameId);
+    } else {
+      await this.putRecord(record);
+    }
+
+    if (this.isLoggedIn()) {
+      this._deleteDriveFileByName(`${gameId}__slot${targetSlot}.state`);
+      if (targetSlot === 0) {
+        this._deleteDriveFileByName(`${gameId}.state`);
+      }
+    }
+    return true;
   }
 
   // ==================== GOOGLE DRIVE PERSONAL SYNC ====================
@@ -256,9 +359,30 @@ class UserSaveManager {
     return this.folderId;
   }
 
-  async _uploadToGoogleDrive(record, type, uint8) {
+  async _deleteDriveFileByName(name) {
+    if (!this.isLoggedIn()) return;
+    try {
+      const folderId = await this._ensureDriveFolder();
+      const q = encodeURIComponent(`name = '${name}' and '${folderId}' in parents and trashed = false`);
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
+        headers: { Authorization: `Bearer ${this.accessToken}` }
+      });
+      const searchData = await searchRes.json();
+      for (const f of searchData.files || []) {
+        await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${this.accessToken}` }
+        });
+      }
+    } catch (_) {}
+  }
+
+  async _uploadToGoogleDrive(record, type, uint8, slot = 0) {
     const folderId = await this._ensureDriveFolder();
-    const fileName = `${record.id}.${type}`;
+    const targetSlot = parseInt(slot, 10) || 0;
+    const fileName = type === 'state'
+      ? (targetSlot > 0 ? `${record.id}__slot${targetSlot}.state` : `${record.id}.state`)
+      : `${record.id}.${type}`;
 
     // Verifica se o arquivo já existe na pasta do usuário
     const q = encodeURIComponent(`name = '${fileName}' and '${folderId}' in parents and trashed = false`);
@@ -276,6 +400,7 @@ class UserSaveManager {
         console: record.console,
         downloadPageUrl: record.downloadPageUrl,
         cover: record.cover,
+        slot: targetSlot,
         updatedAt: record.updatedAt
       })
     };
@@ -318,8 +443,14 @@ class UserSaveManager {
         r.syncedDrive = true;
         await this.putRecord(r);
       }
-      if (r.stateBytes && !r.syncedDrive) {
-        await this._uploadToGoogleDrive(r, 'state', new Uint8Array(r.stateBytes));
+      if (r.stateSlots) {
+        for (const [slotNum, slotData] of Object.entries(r.stateSlots)) {
+          if (slotData?.bytes) {
+            await this._uploadToGoogleDrive(r, 'state', new Uint8Array(slotData.bytes), slotNum);
+          }
+        }
+      } else if (r.stateBytes && !r.syncedDrive) {
+        await this._uploadToGoogleDrive(r, 'state', new Uint8Array(r.stateBytes), 0);
         r.syncedDrive = true;
         await this.putRecord(r);
       }
@@ -340,10 +471,11 @@ class UserSaveManager {
     let count = 0;
 
     for (const f of files) {
-      const match = f.name.match(/^(.+)\.(srm|state)$/i);
+      const match = f.name.match(/^(.+?)(?:__slot(\d+))?\.(srm|state)$/i);
       if (!match) continue;
       const gameId = match[1];
-      const type = match[2].toLowerCase();
+      const slotNum = match[2] !== undefined ? parseInt(match[2], 10) : 0;
+      const type = match[3].toLowerCase();
 
       let meta = {};
       try {
@@ -357,8 +489,11 @@ class UserSaveManager {
         downloadPageUrl: meta.downloadPageUrl || '',
         cover: meta.cover || '',
         updatedAt: meta.updatedAt || f.modifiedTime || new Date().toISOString(),
+        stateSlots: {},
         syncedDrive: true
       };
+
+      if (!existing.stateSlots) existing.stateSlots = {};
 
       const binRes = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`, {
         headers: { Authorization: `Bearer ${this.accessToken}` }
@@ -366,8 +501,17 @@ class UserSaveManager {
       if (!binRes.ok) continue;
       const arrayBuf = await binRes.arrayBuffer();
 
-      if (type === 'srm') existing.srmBytes = arrayBuf;
-      if (type === 'state') existing.stateBytes = arrayBuf;
+      if (type === 'srm') {
+        existing.srmBytes = arrayBuf;
+        existing.srmUpdatedAt = f.modifiedTime || new Date().toISOString();
+      } else if (type === 'state') {
+        existing.stateSlots[slotNum] = {
+          bytes: arrayBuf,
+          size: arrayBuf.byteLength,
+          updatedAt: f.modifiedTime || new Date().toISOString()
+        };
+        if (slotNum === 0) existing.stateBytes = arrayBuf;
+      }
       existing.syncedDrive = true;
 
       await this.putRecord(existing);

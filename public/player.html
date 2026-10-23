@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PokeBat Web Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>PokeMule Web Player</title>
   <style>
     html, body {
       margin: 0;
@@ -17,9 +17,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    #game-container {
+    #game-container, #game {
       width: 100%;
       height: 100%;
       transition: all 0.2s ease;
@@ -148,6 +151,7 @@
     const downloadPageUrl = params.get('url') || '';
     const coverUrl = params.get('cover') || '';
     const autoLoadType = params.get('autoload') || ''; // 'srm' ou 'state'
+    const autoLoadSlot = parseInt(params.get('slot') || '0', 10);
 
     const statusOverlay = document.getElementById('status-overlay');
     const statusText = document.getElementById('status-text');
@@ -191,7 +195,7 @@
     /**
      * Salva o progresso no navegador do próprio usuário (IndexedDB) + Google Drive pessoal (se logado)
      */
-    async function syncSaveToServer(uint8Array, type = 'srm', silent = false) {
+    async function syncSaveToServer(uint8Array, type = 'srm', silent = false, slot = 0) {
       if (!uint8Array || uint8Array.length === 0) {
         if (!silent) showToast('⚠️ Nenhum dado de save encontrado ainda.', 'rgba(245, 158, 11, 0.95)');
         return false;
@@ -205,7 +209,8 @@
           title: gameTitle,
           console: consoleParam,
           url: downloadPageUrl,
-          cover: coverUrl
+          cover: coverUrl,
+          slot
         });
 
         const driveSuffix = record.syncedDrive ? ' + ☁️ Google Drive!' : ' (no seu navegador)!';
@@ -213,7 +218,7 @@
           showToast(
             type === 'srm'
               ? `💾 Save (.SRM) salvo${driveSuffix}`
-              : `⚡ Save State (.STATE) salvo${driveSuffix}`
+              : `⚡ Save State (Slot ${slot}) salvo${driveSuffix}`
           );
         } else {
           showToast(`💾 Auto-Save (.SRM) salvo${driveSuffix}`);
@@ -247,10 +252,10 @@
       // 2. Se o usuário clicou especificamente em "Abrir State"
       if (autoLoadType === 'state') {
         try {
-          const stBuf = await window.userSaveManager.getSaveBytes(gameId, 'state');
+          const stBuf = await window.userSaveManager.getSaveBytes(gameId, 'state', autoLoadSlot);
           if (stBuf && stBuf.length > 0 && gm.loadState) {
             gm.loadState(stBuf);
-            showToast('⚡ Seu Save State instantâneo foi restaurado!');
+            showToast(`⚡ Seu Save State (Slot ${autoLoadSlot}) foi restaurado!`);
           }
         } catch (_) {}
       }
@@ -288,18 +293,20 @@
       if (data.action === 'SAVE_STATE') {
         if (!gm || !gm.getState) return showToast('⚠️ O jogo ainda está iniciando...', 'rgba(245, 158, 11, 0.95)');
         const stateBytes = gm.getState();
-        await syncSaveToServer(stateBytes, 'state', false);
+        const slot = data.slot !== undefined ? data.slot : 0;
+        await syncSaveToServer(stateBytes, 'state', false, slot);
       }
 
       if (data.action === 'LOAD_STATE') {
+        const slot = data.slot !== undefined ? data.slot : 0;
         try {
-          const stBuf = await window.userSaveManager.getSaveBytes(gameId, 'state');
+          const stBuf = await window.userSaveManager.getSaveBytes(gameId, 'state', slot);
           if (!stBuf || stBuf.length === 0) {
-            return showToast('⚠️ Nenhum Save State (.state) salvo para este jogo.', 'rgba(245, 158, 11, 0.95)');
+            return showToast(`⚠️ Nenhum Save State no Slot ${slot}.`, 'rgba(245, 158, 11, 0.95)');
           }
           if (gm && gm.loadState) {
             gm.loadState(stBuf);
-            showToast('⚡ Save State carregado com sucesso!');
+            showToast(`⚡ Slot ${slot} carregado com sucesso!`);
           }
         } catch (err) {
           showToast('Erro ao carregar State: ' + err.message, 'rgba(239, 68, 68, 0.95)');
@@ -345,19 +352,98 @@
       }
     });
 
+    /**
+     * Caso um arquivo .ZIP local seja aberto direto pelo usuário no celular/PC,
+     * descompacta a ROM (.gba / .nds / .gbc) no próprio navegador usando DecompressionStream!
+     */
+    async function extractRomFromZipBlobIfNeeded(blob, fallbackName = '') {
+      try {
+        const headerSlice = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
+        if (
+          headerSlice.length < 4 ||
+          headerSlice[0] !== 0x50 ||
+          headerSlice[1] !== 0x4b ||
+          headerSlice[2] !== 0x03 ||
+          headerSlice[3] !== 0x04
+        ) {
+          return { blob, romName: fallbackName };
+        }
+
+        const buf = new Uint8Array(await blob.arrayBuffer());
+        const view = new DataView(buf.buffer);
+        let eocd = -1;
+        const minEocd = Math.max(0, buf.length - 65557);
+        for (let i = buf.length - 22; i >= minEocd; i--) {
+          if (view.getUint32(i, true) === 0x06054b50) {
+            eocd = i;
+            break;
+          }
+        }
+        if (eocd === -1) return { blob, romName: fallbackName };
+
+        const totalEntries = view.getUint16(eocd + 10, true);
+        let ptr = view.getUint32(eocd + 16, true);
+        const decoder = new TextDecoder();
+        let bestEntry = null;
+
+        for (let i = 0; i < totalEntries && ptr + 46 <= buf.length; i++) {
+          if (view.getUint32(ptr, true) !== 0x02014b50) break;
+          const method = view.getUint16(ptr + 10, true);
+          const compSize = view.getUint32(ptr + 20, true);
+          const uncompSize = view.getUint32(ptr + 24, true);
+          const nameLen = view.getUint16(ptr + 28, true);
+          const extraLen = view.getUint16(ptr + 30, true);
+          const commentLen = view.getUint16(ptr + 32, true);
+          const localOffset = view.getUint32(ptr + 42, true);
+          const name = decoder.decode(buf.subarray(ptr + 46, ptr + 46 + nameLen));
+          ptr += 46 + nameLen + extraLen + commentLen;
+
+          if (/\.(gba|nds|gbc|gb|sfc|smc|bin)$/i.test(name)) {
+            if (!bestEntry || uncompSize > bestEntry.uncompSize) {
+              bestEntry = { name: name.split('/').pop(), method, compSize, uncompSize, localOffset };
+            }
+          }
+        }
+
+        if (!bestEntry) return { blob, romName: fallbackName };
+
+        const loc = bestEntry.localOffset;
+        const locNameLen = view.getUint16(loc + 26, true);
+        const locExtraLen = view.getUint16(loc + 28, true);
+        const dataStart = loc + 30 + locNameLen + locExtraLen;
+        const compBytes = buf.subarray(dataStart, dataStart + bestEntry.compSize);
+
+        if (bestEntry.method === 0) {
+          return { blob: new Blob([compBytes]), romName: bestEntry.name };
+        }
+        if (bestEntry.method === 8 && typeof DecompressionStream !== 'undefined') {
+          const ds = new DecompressionStream('deflate-raw');
+          const stream = new Blob([compBytes]).stream().pipeThrough(ds);
+          const outBlob = await new Response(stream).blob();
+          return { blob: outBlob, romName: bestEntry.name };
+        }
+      } catch (e) {
+        console.warn('[Client ZIP Extract Fallback]', e);
+      }
+      return { blob, romName: fallbackName };
+    }
+
     function launchEmulatorWithUrl(finalBlobUrl, detectedName = '') {
       statusOverlay.style.display = 'none';
 
       const chosenCore = resolveCore(consoleParam, detectedName || gameTitle);
       window.EJS_player = '#game';
       window.EJS_core = chosenCore;
-      window.EJS_gameName = gameTitle;
-      window.EJS_color = '#ef4444';
+      window.EJS_gameName = detectedName || gameTitle;
+      window.EJS_color = '#ff5460';
       window.EJS_startOnLoaded = true;
+      // CRÍTICO PARA MOBILE (iOS Safari / Android Chrome): desativa SharedArrayBuffer/pthreads
+      // para evitar travamentos e tela preta em celulares!
+      window.EJS_threads = false;
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
       window.EJS_gameUrl = finalBlobUrl;
 
-      // Se houver um .srm já salvo no servidor, também podemos informar ao EmulatorJS
+      // Se houver um .srm já salvo, restaura automaticamente ao iniciar
       window.EJS_onGameStart = function () {
         setTimeout(() => {
           restoreLocalSavesIfAvailable();
@@ -386,7 +472,14 @@
 
     async function downloadAndStart() {
       if (directBlobUrl) {
-        launchEmulatorWithUrl(directBlobUrl, gameTitle);
+        try {
+          const res = await fetch(directBlobUrl);
+          const rawBlob = await res.blob();
+          const { blob: cleanBlob, romName } = await extractRomFromZipBlobIfNeeded(rawBlob, gameTitle);
+          launchEmulatorWithUrl(URL.createObjectURL(cleanBlob), romName || gameTitle);
+        } catch (_) {
+          launchEmulatorWithUrl(directBlobUrl, gameTitle);
+        }
         return;
       }
 
@@ -441,17 +534,18 @@
         }
 
         statusText.textContent = `Iniciando emulador (${consoleParam})...`;
-        const blob = new Blob(chunks);
+        const rawBlob = new Blob(chunks);
+        const { blob, romName: finalRomName } = await extractRomFromZipBlobIfNeeded(rawBlob, headerRomName || gameTitle);
 
         // Guarda na memória da sessão do navegador (some assim que fechar a aba!)
         try {
           if (window.parent?.sessionRomBlobs) {
-            window.parent.sessionRomBlobs.set(romApiUrl, { blob, romName: headerRomName || gameTitle });
+            window.parent.sessionRomBlobs.set(romApiUrl, { blob, romName: finalRomName || gameTitle });
           }
         } catch (_) {}
 
         const blobUrl = URL.createObjectURL(blob);
-        launchEmulatorWithUrl(blobUrl, headerRomName || gameTitle);
+        launchEmulatorWithUrl(blobUrl, finalRomName || gameTitle);
       } catch (err) {
         spinner.style.display = 'none';
         statusText.textContent = 'Não foi possível carregar o link direto automaticamente';

@@ -1217,9 +1217,12 @@ const MIME_TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
-  '.svg': 'image/svg+xml'
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.webp': 'image/webp'
 };
 
 const server = http.createServer(async (req, res) => {
@@ -1489,7 +1492,7 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ ok: true, path: SAVES_DIR }));
   }
 
-  // 5. API: Inspecionar Pacote de ROM
+  // 5. API: Inspecionar Pacote de ROM (100% em RAM, Zero Disco)
   if (pathname === '/api/rom-inspect') {
     const gameId = parsedUrl.searchParams.get('id') || 'custom';
     const targetPageUrl = parsedUrl.searchParams.get('url');
@@ -1500,8 +1503,16 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-      const { cachedPath, originalName } = await ensureRomCached(gameId, targetPageUrl);
-      const buffer = fs.readFileSync(cachedPath);
+      const { directUrl } = await resolveMediaFireDirectUrl(targetPageUrl);
+      const romRes = await fetch(directUrl, {
+        headers: { 'User-Agent': USER_AGENT },
+        redirect: 'follow'
+      });
+      if (!romRes.ok) throw new Error(`Falha ao inspecionar pacote (${romRes.status})`);
+
+      const urlObj = new URL(romRes.url || directUrl);
+      const originalName = decodeURIComponent(path.basename(urlObj.pathname)) || `${gameId}.zip`;
+      const buffer = Buffer.from(await romRes.arrayBuffer());
 
       if (buffer.length > 4 && buffer.readUInt32LE(0) === 0x04034b50) {
         const entries = inspectZipBuffer(buffer);
@@ -1551,13 +1562,26 @@ const server = http.createServer(async (req, res) => {
       // Se for uma ROM do HackDex (hackdex://slug?baseRom=...), compila e envia direto para a memória do navegador!
       if (targetPageUrl.startsWith('hackdex://')) {
         const { cachedPath, originalName } = await buildPatchedHackdexRom(gameId, targetPageUrl, gameTitle);
-        const buf = fs.readFileSync(cachedPath);
+        let buf = fs.readFileSync(cachedPath);
+        let finalName = originalName;
         try { fs.unlinkSync(cachedPath); } catch (_) {}
+
+        if (buf.length > 4 && buf.readUInt32LE(0) === 0x04034b50) {
+          try {
+            const entries = inspectZipBuffer(buf).filter(e => e.isRom);
+            if (entries.length > 0) {
+              const sorted = [...entries].sort((a, b) => b.uncompressedSize - a.uncompressedSize);
+              buf = extractEntryFromZipBuffer(buf, sorted[0]);
+              finalName = sorted[0].baseName;
+            }
+          } catch (_) {}
+        }
+
         res.writeHead(200, {
           'Content-Type': 'application/octet-stream',
           'Content-Length': buf.length,
-          'X-Rom-Filename': encodeURIComponent(originalName),
-          'Content-Disposition': `attachment; filename="${encodeURIComponent(originalName)}"`
+          'X-Rom-Filename': encodeURIComponent(finalName),
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(finalName)}"`
         });
         return res.end(buf);
       }
@@ -1584,27 +1608,47 @@ const server = http.createServer(async (req, res) => {
         fileName += '.zip';
       }
 
-      // Se o usuário escolheu uma versão específica dentro de um pacote Multi-ROM (.zip), extrai em RAM
-      if (selectedEntryName) {
+      const contentLength = parseInt(romRes.headers.get('content-length') || '0', 10);
+
+      // Se for pacote até ~95MB (todos os GBA/GBC e a maioria dos NDS), extrai automaticamente a ROM pura (.gba/.nds/.gbc) de dentro do .ZIP em RAM!
+      // Isso evita que o celular trave tentando descompactar .zip ou abrindo arquivos Leia-me.txt por engano!
+      if (contentLength === 0 || contentLength < 95 * 1024 * 1024) {
         const arrayBuf = await romRes.arrayBuffer();
         const buffer = Buffer.from(arrayBuf);
         if (buffer.length > 4 && buffer.readUInt32LE(0) === 0x04034b50) {
-          const entries = inspectZipBuffer(buffer).filter(e => e.isRom);
-          const chosen = entries.find(e => e.fileName === selectedEntryName || e.baseName === selectedEntryName) || entries[0];
-          if (chosen) {
-            const extractedRom = extractEntryFromZipBuffer(buffer, chosen);
-            res.writeHead(200, {
-              'Content-Type': 'application/octet-stream',
-              'Content-Length': extractedRom.length,
-              'X-Rom-Filename': encodeURIComponent(chosen.baseName),
-              'Content-Disposition': `attachment; filename="${encodeURIComponent(chosen.baseName)}"`
-            });
-            return res.end(extractedRom);
+          try {
+            const entries = inspectZipBuffer(buffer).filter(e => e.isRom);
+            if (entries.length > 0) {
+              // Escolhe a entry pedida ou a maior ROM válida dentro do ZIP (ignorando .txt/.png/subpastas vazias)
+              const sortedBySize = [...entries].sort((a, b) => b.uncompressedSize - a.uncompressedSize);
+              const chosen = selectedEntryName
+                ? (entries.find(e => e.fileName === selectedEntryName || e.baseName === selectedEntryName) || sortedBySize[0])
+                : sortedBySize[0];
+              const extractedRom = extractEntryFromZipBuffer(buffer, chosen);
+              console.log(`[ZIP AUTO-EXTRACT] Extraído em RAM: ${chosen.baseName} (${(extractedRom.length / 1024 / 1024).toFixed(2)} MB)`);
+              res.writeHead(200, {
+                'Content-Type': 'application/octet-stream',
+                'Content-Length': extractedRom.length,
+                'X-Rom-Filename': encodeURIComponent(chosen.baseName),
+                'Content-Disposition': `attachment; filename="${encodeURIComponent(chosen.baseName)}"`
+              });
+              return res.end(extractedRom);
+            }
+          } catch (zipErr) {
+            console.warn('[ZIP AUTO-EXTRACT FALLBACK]', zipErr.message);
           }
         }
+
+        // Caso já seja uma ROM descompactada (.gba/.nds/.gbc) ou outro formato
+        res.writeHead(200, {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': buffer.length,
+          'X-Rom-Filename': encodeURIComponent(fileName),
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`
+        });
+        return res.end(buffer);
       }
 
-      const contentLength = romRes.headers.get('content-length');
       const headers = {
         'Content-Type': 'application/octet-stream',
         'X-Rom-Filename': encodeURIComponent(fileName),
@@ -1614,7 +1658,7 @@ const server = http.createServer(async (req, res) => {
 
       res.writeHead(200, headers);
 
-      // Stream puro da internet direto para a memória do navegador do usuário (sem gravar nada no HD do servidor!)
+      // Stream puro para pacotes gigantes (>95MB)
       const reader = romRes.body.getReader();
       while (true) {
         const { done, value } = await reader.read();

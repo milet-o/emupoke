@@ -2,22 +2,44 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PokeBat Web Hub — Catálogo Completo, Saves & Cheats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b172c" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PokeMule" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <title>PokeMule — Pokédex & Emulador Web Pokémon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    /* ==========================================================================
+       POKÉMULE: CORES DA OPÇÃO 1 (GBA INDIGO) + CARTUCHOS FÍSICOS RETRÔ
+       ========================================================================== */
     :root {
-      --bg: #0b0e14;
-      --surface: #151a24;
-      --surface-hover: #1e2533;
-      --border: #262f40;
-      --primary: #ef4444;
-      --primary-hover: #dc2626;
-      --accent: #3b82f6;
-      --emerald: #10b981;
-      --amber: #f59e0b;
-      --purple: #8b5cf6;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
+      --bg: #1b172c;
+      --bg-elevated: #25203b;
+      --surface: #2b2545;
+      --surface-hover: #352e54;
+      --surface-soft: #1f1a33;
+      --border: #3e3660;
+      --border-highlight: #5a4f89;
+      --text: #f8f6ff;
+      --text-muted: #bdb4dc;
+      --primary: #ff5460;
+      --primary-hover: #ff3b49;
+      --primary-ink: #ffffff;
+      --purple: #9d7aff;
+      --emerald: #12d6a0;
+      --amber: #ffbe3b;
+      --sky: #4dc4ff;
+      --card-shadow: 0 10px 24px -5px rgba(10, 7, 20, 0.55), 0 3px 8px rgba(10, 7, 20, 0.35);
+      --card-focus-ring: 0 0 0 3px #4dc4ff, 0 14px 28px -6px rgba(77, 196, 255, 0.45);
+      --header-bg: rgba(27, 23, 44, 0.94);
+      --header-text: #f8f6ff;
     }
 
     * {
@@ -26,107 +48,246 @@
       padding: 0;
     }
 
+    ::selection {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-highlight);
+      border-radius: 999px;
+      border: 2px solid var(--bg);
+    }
+
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Nunito', system-ui, -apple-system, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      caret-color: var(--primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
+    /* ==========================================================================
+       NAVBAR UNIFICADA (3 ZONAS LIMPAS — NADA CORTADO NA BORDA)
+       ========================================================================== */
     header {
-      background: rgba(21, 26, 36, 0.95);
-      backdrop-filter: blur(12px);
+      background: var(--header-bg);
+      backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
-      padding: 14px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
+      padding: 10px 20px;
+    }
+
+    .navbar-inner {
+      max-width: 1420px;
+      margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Zona 1: Marca PokeMule + Switcher Integrado */
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-    }
-
-    .pokeball-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: linear-gradient(180deg, #ef4444 0%, #ef4444 46%, #1f2937 46%, #1f2937 54%, #f9fafb 54%, #f9fafb 100%);
-      border: 2px solid #e5e7eb;
-      position: relative;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
-    }
-
-    .pokeball-icon::after {
-      content: '';
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: #f9fafb;
-      border: 2px solid #1f2937;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .brand h1 {
-      font-size: 1.22rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .brand span {
-      font-size: 0.72rem;
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 2px 9px;
-      border-radius: 999px;
-      font-weight: 600;
-    }
-
-    .search-bar {
-      display: flex;
-      gap: 8px;
-      flex: 1;
-      max-width: 640px;
-    }
-
-    .search-bar input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
+      text-decoration: none;
       color: var(--text);
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
+      cursor: pointer;
     }
 
-    .search-bar input:focus {
-      border-color: var(--primary);
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ff5460 0%, #d8313e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(255, 84, 96, 0.35);
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+    }
+
+    .brand:hover .brand-logo {
+      transform: rotate(15deg) scale(1.05);
+    }
+
+    .brand-logo svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .brand-text h1 {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    .brand-text small {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+
+    /* Pílula Seletora de Catálogo (PokeBat vs HackDex) direto na Navbar */
+    .source-segmented {
+      display: inline-flex;
+      background: var(--surface-soft);
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      gap: 4px;
+    }
+
+    .source-pill-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.18s cubic-bezier(0.22, 1, 0.36, 1), color 0.18s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .source-pill-btn:hover {
+      color: var(--text);
+    }
+
+    .source-pill-btn.active-pokebat {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(255, 84, 96, 0.35);
+    }
+
+    .source-pill-btn.active-hackdex {
+      background: var(--purple);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(157, 122, 255, 0.35);
+    }
+
+    .source-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Zona 2: Busca Amigável */
+    .nav-center {
+      flex: 1;
+      min-width: 220px;
+      max-width: 460px;
+      display: flex;
+      align-items: center;
+      background: var(--surface-soft);
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 6px 3px 14px;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .nav-center:focus-within {
+      border-color: var(--sky);
+      background: var(--surface);
+    }
+
+    .nav-center svg {
+      width: 17px;
+      height: 17px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .nav-center input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      outline: none;
+      min-width: 0;
+    }
+
+    .nav-center input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    .search-submit-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .search-submit-btn:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-highlight);
+    }
+
+    /* Zona 3: Ações Rápidas Compactas */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .btn {
       background: var(--primary);
-      color: #fff;
+      color: var(--primary-ink);
       border: none;
       padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.84rem;
+      border-radius: 999px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.82rem;
       cursor: pointer;
-      transition: background 0.15s ease, transform 0.1s ease;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -140,273 +301,241 @@
     }
 
     .btn:active {
-      transform: scale(0.98);
+      transform: translateY(1px);
     }
 
-    .btn-secondary {
-      background: var(--surface-hover);
+    .btn-tactile {
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
     }
 
-    .btn-secondary:hover {
-      background: #283142;
+    .btn-tactile:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-highlight);
+    }
+
+    .btn-tactile.active-drawer {
+      border-color: var(--sky);
+      color: var(--sky);
+    }
+
+    .btn-drive {
+      background: rgba(157, 122, 255, 0.16);
+      border: 1px solid rgba(157, 122, 255, 0.42);
+      color: var(--text);
+    }
+
+    .btn-drive:hover {
+      background: rgba(157, 122, 255, 0.28);
     }
 
     .btn-emerald {
-      background: rgba(16, 185, 129, 0.18);
-      border: 1px solid rgba(16, 185, 129, 0.45);
-      color: #34d399;
+      background: rgba(18, 214, 160, 0.16);
+      border: 1px solid rgba(18, 214, 160, 0.42);
+      color: var(--emerald);
     }
 
     .btn-emerald:hover {
-      background: rgba(16, 185, 129, 0.3);
+      background: rgba(18, 214, 160, 0.26);
     }
 
-    .btn-purple {
-      background: rgba(139, 92, 246, 0.2);
-      border: 1px solid rgba(139, 92, 246, 0.45);
-      color: #c4b5fd;
+    .btn-icon-only {
+      padding: 8px 10px;
     }
 
-    .btn-purple:hover {
-      background: rgba(139, 92, 246, 0.32);
+    .count-pill {
+      background: var(--emerald);
+      color: #09221b;
+      font-size: 0.7rem;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
     }
 
-    main {
-      max-width: 1360px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 22px 24px;
-      flex: 1;
-    }
-
-    /* Cofre de Saves Local */
-    .saves-vault-banner {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(21, 26, 36, 0.95));
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      border-radius: 14px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
+    /* ==========================================================================
+       GAVETAS RECOLHÍVEIS SOB DEMANDA (NÃO EMPURRAM OS JOGOS SE NÃO USADAS)
+       ========================================================================== */
+    .QuickDrawer {
       display: none;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
     }
 
-    .saves-vault-banner.visible {
+    .QuickDrawer.open {
       display: block;
     }
 
-    .saves-header {
+    .drawer-inner {
+      max-width: 1420px;
+      margin: 0 auto;
+    }
+
+    /* Gaveta de Link / Arquivo ROM */
+    .quick-tools-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
     }
 
-    .saves-header h3 {
-      font-size: 0.98rem;
-      color: #34d399;
+    .quick-url-form {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-width: 260px;
+      max-width: 680px;
+    }
+
+    .quick-url-form input {
+      flex: 1;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .quick-url-form input:focus {
+      border-color: var(--sky);
+    }
+
+    /* ==========================================================================
+       MODAL DE GERENCIAMENTO DE SAVES (Overlay Flutuante - Não Empurra a Tela)
+       ========================================================================== */
+    .saves-modal-box {
+      max-width: 860px;
+      width: 95%;
+    }
+
+    .save-game-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 14px;
+      transition: border-color 0.15s ease, background 0.15s ease;
     }
 
-    .saves-list {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      padding-bottom: 6px;
+    .save-game-item:hover {
+      border-color: var(--border-highlight);
+      background: var(--surface-soft);
     }
 
-    .save-pill {
-      background: rgba(11, 14, 20, 0.85);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
-      min-width: 270px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .save-pill-title {
-      font-size: 0.86rem;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .save-pill-meta {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-
-    .save-pill-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .save-pill-actions .btn {
-      padding: 5px 10px;
-      font-size: 0.75rem;
-    }
-
-    /* Custom URL Box */
-    .custom-scrape-box {
+    .save-game-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      object-fit: cover;
       background: var(--surface);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .save-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .slot-card {
+      background: var(--surface-soft);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px 20px;
-      margin-bottom: 18px;
+      padding: 12px;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      flex-direction: column;
+      gap: 6px;
     }
 
-    .custom-scrape-box .info h3 {
-      font-size: 0.94rem;
-      margin-bottom: 2px;
+    .slot-card.occupied {
+      background: var(--bg-elevated);
+      border-color: var(--border-highlight);
     }
 
-    .custom-scrape-box .info p {
-      font-size: 0.79rem;
-      color: var(--text-muted);
-    }
-
-    .custom-scrape-form {
-      display: flex;
-      gap: 8px;
-      flex: 1;
-      max-width: 540px;
-    }
-
-    .custom-scrape-form input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: 8px;
+    .slot-card-title {
       font-size: 0.85rem;
-    }
-
-    /* Seletor de Fonte: PokeBat vs HackDex */
-    .source-switcher {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .source-tab {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 15px 18px;
-      cursor: pointer;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      transition: all 0.18s ease;
-      text-align: left;
-      color: var(--text);
     }
 
-    .source-tab:hover {
-      border-color: #4b5563;
-      background: var(--surface-hover);
+    /* ==========================================================================
+       CONTEÚDO PRINCIPAL — FILTROS EM 1 LINHA + JOGOS NA 1ª DOBRA!
+       ========================================================================== */
+    main {
+      max-width: 1420px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 36px;
+      flex: 1;
     }
 
-    .source-tab.active-pokebat {
-      border-color: var(--primary);
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.14), rgba(21, 26, 36, 0.96));
-      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.18);
-    }
-
-    .source-tab.active-hackdex {
-      border-color: var(--purple);
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.16), rgba(21, 26, 36, 0.96));
-      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
-    }
-
-    .source-tab-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      margin-bottom: 3px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .source-tab-desc {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-
-    .source-pill {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 999px;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    /* Filter Bar */
-    .filters-bar {
+    .toolbar-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 18px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
     }
 
     .filter-tabs {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 7px;
     }
 
     .filter-chip {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text-muted);
+      font-family: inherit;
       padding: 7px 14px;
       border-radius: 999px;
       font-size: 0.82rem;
-      font-weight: 600;
+      font-weight: 800;
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
     .filter-chip:hover {
       color: var(--text);
-      border-color: #4b5563;
+      border-color: var(--border-highlight);
+      background: var(--surface-hover);
     }
 
     .filter-chip.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
+      background: var(--sky);
+      border-color: var(--sky);
+      color: #062230;
+      box-shadow: 0 4px 12px rgba(77, 196, 255, 0.3);
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .lang-toggle {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: var(--surface);
-      padding: 4px;
-      border-radius: 10px;
+      gap: 4px;
+      background: var(--surface-soft);
+      padding: 3px;
+      border-radius: 999px;
       border: 1px solid var(--border);
     }
 
@@ -414,66 +543,106 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
+      font-family: inherit;
       padding: 5px 11px;
-      border-radius: 7px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
       cursor: pointer;
+      transition: all 0.15s ease;
     }
 
     .lang-btn.active {
-      background: var(--surface-hover);
-      color: #fff;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
-    .section-title {
-      font-size: 1.08rem;
+    #count-label {
+      font-size: 0.78rem;
       font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
     }
 
+    /* ==========================================================================
+       GRADE DE CARTUCHOS (ESTILO SWITCH / DELTA PORTÁTIL)
+       ========================================================================== */
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      padding-bottom: 12px;
     }
 
+    /* Cartucho Físico GBA Índigo */
     .game-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: linear-gradient(180deg, #342c56 0%, #251f3e 100%);
+      border: 2px solid var(--border);
+      border-radius: 14px 14px 8px 8px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 10px 22px -4px rgba(10, 7, 22, 0.55), inset 0 1.5px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      padding-top: 18px;
+    }
+
+    /* Ranhuras superiores de aderência do cartucho (grip limpo, sem texto) */
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 2px;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .game-card::after {
+      content: '';
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 3px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 2px;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+      pointer-events: none;
     }
 
     .game-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--primary);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+      transform: translateY(-6px);
+      border-color: var(--sky);
+      box-shadow: 0 16px 32px -6px rgba(10, 7, 22, 0.75), 0 0 0 2px rgba(77, 196, 255, 0.4), inset 0 1.5px 0 rgba(255, 255, 255, 0.25);
     }
 
+    /* Rótulo / Adesivo emoldurado no plástico do cartucho */
     .card-cover {
       position: relative;
-      height: 165px;
-      background: #07090d;
+      height: 154px;
+      margin: 0 10px;
+      border-radius: 9px;
+      background: var(--surface-soft);
       overflow: hidden;
       cursor: pointer;
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.25);
     }
 
+    /* Impeccable rule: never animate image on hover; container carries feedback */
     .card-cover img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .game-card:hover .card-cover img {
-      transform: scale(1.05);
+      display: block;
     }
 
     .badges {
@@ -486,77 +655,182 @@
     }
 
     .badge {
-      font-size: 0.67rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-size: 0.66rem;
+      font-weight: 900;
+      padding: 3px 9px;
+      border-radius: 999px;
       text-transform: uppercase;
-      backdrop-filter: blur(6px);
+      letter-spacing: 0.02em;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
     }
 
-    .badge-gba { background: rgba(59, 130, 246, 0.92); color: #fff; }
-    .badge-nds { background: rgba(139, 92, 246, 0.92); color: #fff; }
-    .badge-gbc { background: rgba(236, 72, 153, 0.92); color: #fff; }
-    .badge-ptbr { background: rgba(16, 185, 129, 0.92); color: #fff; }
-    .badge-en { background: rgba(75, 85, 99, 0.92); color: #e5e7eb; }
-    .badge-cached { background: rgba(245, 158, 11, 0.95); color: #111827; }
-    .badge-saved { background: rgba(16, 185, 129, 0.95); color: #052e16; }
+    .badge-gba { background: #3b82f6; color: #fff; }
+    .badge-nds { background: #8b5cf6; color: #fff; }
+    .badge-gbc { background: #ec4899; color: #fff; }
+    .badge-ptbr { background: #10b981; color: #042f22; }
+    .badge-en { background: rgba(27, 23, 44, 0.88); color: #f8f6ff; }
+    .badge-cached { background: #ffbe3b; color: #241800; }
+    .badge-saved { background: #12d6a0; color: #042b20; }
 
     .card-body {
-      padding: 15px;
+      padding: 12px 14px 14px;
       display: flex;
       flex-direction: column;
       flex: 1;
     }
 
     .card-title {
-      font-size: 0.98rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-      line-height: 1.3;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.02rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+      line-height: 1.25;
+      color: var(--text);
     }
 
     .card-sub {
-      font-size: 0.75rem;
-      color: #60a5fa;
-      margin-bottom: 8px;
-      font-weight: 500;
+      font-size: 0.74rem;
+      color: var(--sky);
+      margin-bottom: 7px;
+      font-weight: 800;
     }
 
     .card-desc {
       font-size: 0.8rem;
       color: var(--text-muted);
-      line-height: 1.45;
+      line-height: 1.42;
       margin-bottom: 14px;
       flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .card-actions {
       display: flex;
-      gap: 6px;
+      gap: 7px;
+      align-items: center;
     }
 
     .card-actions .btn-play {
       flex: 1;
+      padding: 9px 14px;
+      font-size: 0.85rem;
     }
 
-    /* Pagination */
+    /* Paginação amigável */
     .pagination {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
-      margin-top: 32px;
-      padding-top: 20px;
+      margin-top: 28px;
+      padding-top: 18px;
       border-top: 1px solid var(--border);
     }
 
-    /* Player View + Side Drawer (Cheats) */
+    .loading-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 54px 20px;
+      color: var(--text-muted);
+      font-weight: 700;
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      border: 1px dashed var(--border);
+    }
+
+    /* ==========================================================================
+       MODAL DE FICHA TÉCNICA E PLAYER VIEW
+       ========================================================================== */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 12, 26, 0.8);
+      backdrop-filter: blur(6px);
+      z-index: 120;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 22px;
+      max-width: 820px;
+      width: 100%;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+    }
+
+    .modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.1rem;
+    }
+
+    .modal-content {
+      padding: 20px 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .screenshots-grid {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .screenshots-grid img {
+      height: 140px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+    }
+
+    .mirrors-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .rom-entry-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Player View */
     #player-view {
       display: none;
       position: fixed;
       inset: 0;
-      background: #05070a;
+      background: #090812;
       z-index: 100;
       flex-direction: column;
     }
@@ -566,15 +840,16 @@
     }
 
     .player-topbar {
-      min-height: 56px;
-      background: #11151d;
-      border-bottom: 1px solid var(--border);
+      min-height: 54px;
+      background: #161324;
+      border-bottom: 1px solid #2f294a;
       padding: 8px 18px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
+      color: #f8f6ff;
     }
 
     .player-title-wrap {
@@ -584,9 +859,10 @@
     }
 
     .player-title-wrap h2 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      max-width: 340px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.96rem;
+      font-weight: 600;
+      max-width: 320px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -621,16 +897,16 @@
       border: none;
     }
 
-    /* Gaveta Lateral de Cheats */
     #cheats-drawer {
-      width: 360px;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
+      width: 350px;
+      background: #1b172c;
+      border-left: 1px solid #3f3763;
       display: none;
       flex-direction: column;
       overflow-y: auto;
       padding: 16px;
       gap: 12px;
+      color: #f8f6ff;
     }
 
     #cheats-drawer.open {
@@ -638,9 +914,9 @@
     }
 
     .cheat-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      background: #25203b;
+      border: 1px solid #3f3763;
+      border-radius: 14px;
       padding: 12px;
       display: flex;
       flex-direction: column;
@@ -649,224 +925,385 @@
 
     .cheat-card h4 {
       font-size: 0.85rem;
-      color: #f3f4f6;
     }
 
     .cheat-code-box {
-      background: #05070a;
-      border: 1px solid #1f2937;
-      color: #34d399;
-      font-family: Consolas, monospace;
+      background: #120f1d;
+      border: 1px solid #3f3763;
+      color: #12d6a0;
+      font-family: monospace;
       font-size: 0.78rem;
       padding: 8px;
-      border-radius: 6px;
+      border-radius: 8px;
       white-space: pre-wrap;
       user-select: all;
     }
 
     .cheat-note {
       font-size: 0.73rem;
-      color: var(--text-muted);
+      color: #bdb4dc;
       line-height: 1.35;
     }
 
-    /* Modal de Ficha Técnica, Screenshots e Seletor Multi-ROM */
-    .modal-backdrop {
+    /* Modo Tela Cheia Imersivo (Mobile & Desktop) */
+    #player-view.immersive-fullscreen .player-topbar {
+      display: none !important;
+    }
+
+    #floating-menu-pill {
       display: none;
       position: fixed;
-      inset: 0;
-      background: rgba(5, 7, 10, 0.82);
-      backdrop-filter: blur(6px);
-      z-index: 120;
+      top: env(safe-area-inset-top, 10px);
+      left: 10px;
+      margin-top: 6px;
+      z-index: 250;
+      background: rgba(22, 19, 36, 0.78);
+      backdrop-filter: blur(8px);
+      color: #f8f6ff;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.2s ease, transform 0.15s ease;
+      opacity: 0.78;
+    }
+
+    #floating-menu-pill:hover,
+    #floating-menu-pill:active {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+
+    #player-view.immersive-fullscreen #floating-menu-pill {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 20px;
+      gap: 5px;
     }
 
-    .modal-backdrop.open {
-      display: flex;
+    @media (max-width: 900px) {
+      .navbar-inner {
+        justify-content: center;
+      }
+      .nav-center {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+      }
     }
 
-    .modal-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      max-width: 820px;
-      width: 100%;
-      max-height: 88vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
-    }
+    /* ==========================================================================
+       LAYOUT EXCLUSIVO PARA CELULAR (Não altera nada no PC!)
+       Grade de 2 cartuchos lado a lado para ver vários jogos na tela igual no PC
+       ========================================================================== */
+    @media (max-width: 680px) {
+      header {
+        padding: 8px 10px;
+      }
+      .navbar-inner {
+        gap: 8px;
+      }
+      .nav-left {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .brand-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+      }
+      .brand-logo svg {
+        width: 18px;
+        height: 18px;
+      }
+      .brand-text h1 {
+        font-size: 1.18rem;
+      }
+      .brand-text small {
+        font-size: 0.6rem;
+      }
+      .source-segmented {
+        padding: 3px;
+      }
+      .source-pill-btn {
+        font-size: 0.72rem;
+        padding: 5px 10px;
+      }
+      .nav-right {
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+      }
+      .nav-right .btn {
+        padding: 6px 10px;
+        font-size: 0.74rem;
+      }
+      .nav-center {
+        padding: 2px 5px 2px 10px;
+      }
+      .nav-center input {
+        font-size: 0.8rem;
+        padding: 5px 6px;
+      }
 
-    .modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      main {
+        padding: 10px 10px 28px;
+      }
+      .toolbar-row {
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .filter-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+      }
+      .filter-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .filter-chip {
+        padding: 5px 11px;
+        font-size: 0.74rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
 
-    .modal-header h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-    }
+      /* Grade de 2 colunas no celular para exibir vários cartuchos na tela */
+      .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .game-card {
+        padding-top: 14px;
+        border-radius: 11px 11px 6px 6px;
+      }
+      .game-card::before {
+        top: 4px;
+        width: 40px;
+        height: 2px;
+      }
+      .game-card::after {
+        top: 8px;
+        width: 28px;
+        height: 2px;
+      }
+      .card-cover {
+        height: 96px;
+        margin: 0 6px;
+        border-radius: 7px;
+      }
+      .badges {
+        top: 6px;
+        left: 6px;
+        gap: 3px;
+      }
+      .badge {
+        font-size: 0.54rem;
+        padding: 2px 5px;
+      }
+      .card-body {
+        padding: 8px 8px 10px;
+      }
+      .card-title {
+        font-size: 0.82rem;
+        line-height: 1.2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .card-sub {
+        font-size: 0.64rem;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .card-desc {
+        font-size: 0.68rem;
+        line-height: 1.3;
+        -webkit-line-clamp: 2;
+        margin-bottom: 8px;
+      }
+      .card-actions {
+        gap: 4px;
+      }
+      .card-actions .btn-play {
+        padding: 6px 8px;
+        font-size: 0.74rem;
+      }
+      .card-actions .btn-tactile {
+        padding: 6px 7px;
+        font-size: 0.7rem;
+      }
+      .card-actions .btn-icon-only {
+        display: none;
+      }
 
-    .modal-content {
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .screenshots-grid {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 6px;
-    }
-
-    .screenshots-grid img {
-      height: 140px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      object-fit: cover;
-    }
-
-    .mirrors-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .rom-entry-item {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .loading-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 48px;
-      color: var(--text-muted);
+      /* Barra do player enxuta no celular quando aberta */
+      .player-topbar {
+        padding: 6px 10px;
+        gap: 6px;
+      }
+      .player-toolbar {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+      }
+      .player-toolbar .btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 5px 9px;
+        font-size: 0.72rem;
+      }
+      #cheats-drawer {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        z-index: 260;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- NAVBAR UNIFICADA E AMIGÁVEL (3 Zonas Sem Cortar Nada) -->
   <header>
-    <div class="brand">
-      <div class="pokeball-icon"></div>
-      <div>
-        <h1>PokeBat Web Hub</h1>
-      </div>
-      <span>Full Scraper • Multi-ROM • Save Vault</span>
-    </div>
+    <div class="navbar-inner">
+      <!-- Esquerda: Logo PokeMule + Switcher Integrado -->
+      <div class="nav-left">
+        <div class="brand" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+          <div class="brand-logo" title="PokeMule">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>PokeMule</h1>
+            <small id="section-heading">Catálogo PokeBat.net</small>
+          </div>
+        </div>
 
-    <div class="search-bar">
-      <input type="text" id="search-input" placeholder="Buscar qualquer jogo no PokeBat (ex: Unbound, Radical Red, FireRed, HeartGold, Black 2)..." />
-      <button class="btn" id="search-btn">Buscar</button>
-      <label class="btn btn-secondary" style="cursor: pointer;" title="Carregar arquivo .gba, .nds, .gbc ou .zip do seu PC">
-        📂 Abrir ROM Local
-        <input type="file" id="local-rom-input" accept=".gba,.nds,.zip,.7z,.rar,.gbc,.gb" style="display: none;" />
-      </label>
-      <button class="btn btn-purple" id="google-drive-btn" title="Sincronizar seus saves direto na sua conta pessoal do Google Drive">
-        ☁️ Login Google Drive
-      </button>
-      <button class="btn btn-emerald" id="share-ngrok-btn" style="box-shadow: 0 0 10px rgba(16,185,129,0.3);" title="Copiar link público do ngrok para jogar online ou compartilhar">
-        🌐 Compartilhar (ngrok)
-      </button>
+        <div class="source-segmented" role="tablist" aria-label="Escolher Fonte de Jogos">
+          <button class="source-pill-btn active-pokebat" id="tab-pokebat" onclick="switchSource('pokebat')">
+            <span class="source-dot"></span>
+            PokeBat.net
+          </button>
+          <button class="source-pill-btn" id="tab-hackdex" onclick="switchSource('hackdex')">
+            <span class="source-dot"></span>
+            HackDex.app
+          </button>
+        </div>
+      </div>
+
+      <!-- Centro: Busca Redonda -->
+      <div class="nav-center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Buscar Pokémon (ex: Emerald Seaglass, Unbound, FireRed)..." />
+        <button class="search-submit-btn" id="search-btn">Ir</button>
+      </div>
+
+      <!-- Direita: Ações Rápidas sem Poluir a Tela -->
+      <div class="nav-right">
+        <button class="btn btn-tactile" id="toggle-tools-btn" onclick="toggleQuickDrawer('tools-drawer', this)" title="Colar link direto ou abrir arquivo ROM do seu PC">
+          ➕ Link / ROM
+        </button>
+
+        <button class="btn btn-tactile" id="toggle-saves-btn" onclick="openSavesVaultModal()" title="Ver seus saves salvos no navegador ou Google Drive">
+          💾 Saves <span class="count-pill" id="saves-count-badge">0</span>
+        </button>
+
+        <button class="btn btn-drive" id="google-drive-btn" onclick="handleGoogleDriveClick()" title="Sincronizar seus saves na sua conta pessoal do Google Drive">
+          ☁️ Google Drive
+        </button>
+      </div>
     </div>
   </header>
 
-  <main>
-    <!-- Cofre de Saves do Jogador (Navegador + Google Drive Pessoal) -->
-    <div class="saves-vault-banner visible" id="saves-vault-banner">
-      <div class="saves-header">
-        <h3 id="vault-heading">💾 Seus Saves (Isolados no seu Navegador / Google Drive)</h3>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button class="btn btn-purple" id="sync-drive-btn" style="padding: 6px 12px; font-size: 0.78rem;">
-            ☁️ Sincronizar com Meu Google Drive
-          </button>
-          <button class="btn btn-secondary" id="config-client-id-btn" style="padding: 6px 10px; font-size: 0.75rem;" title="Configurar Google OAuth Client ID">
-            ⚙️ Client ID
-          </button>
-        </div>
-      </div>
-      <div class="saves-list" id="saves-list"></div>
-    </div>
-
-    <!-- Seletor de Fonte: PokeBat vs HackDex (Fase 6) -->
-    <div class="source-switcher">
-      <div class="source-tab active-pokebat" id="tab-pokebat" onclick="switchSource('pokebat')">
-        <div>
-          <div class="source-tab-title">🔴 PokeBat.net <span class="source-pill" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">PT-BR & Completo</span></div>
-          <div class="source-tab-desc">Catálogo nacional com traduções completas em português, GBA, NDS, GBC e ROMs prontas para rodar.</div>
-        </div>
-      </div>
-      <div class="source-tab" id="tab-hackdex" onclick="switchSource('hackdex')">
-        <div>
-          <div class="source-tab-title">🟣 HackDex.app <span class="source-pill" style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd;">349+ Romhacks Globais</span></div>
-          <div class="source-tab-desc">Catálogo oficial internacional de Romhacks (Radical Red, Unbound, Emerald Seaglass, etc.) com patches BPS.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Colar Link Direto -->
-    <div class="custom-scrape-box">
-      <div class="info">
-        <h3 id="custom-scrape-box-title">🔗 Colar Link Direto do PokeBat.net</h3>
-        <p id="custom-scrape-box-desc">Cole qualquer URL de post do <b>pokebat.net</b> ou link direto do MediaFire/TinyURL/Google Drive:</p>
-      </div>
-      <div class="custom-scrape-form">
-        <input type="text" id="custom-url-input" placeholder="https://pokebat.net/... ou link do MediaFire/TinyURL" />
+  <!-- GAVETA OPCIONAL: COLAR LINK DIRETO OU ABRIR ROM LOCAL (Fica escondida até clicar em "+ Link / ROM") -->
+  <div class="QuickDrawer" id="tools-drawer">
+    <div class="drawer-inner quick-tools-row">
+      <div class="quick-url-form">
+        <input type="text" id="custom-url-input" placeholder="Cole um link do pokebat.net, hackdex.app ou MediaFire..." />
         <button class="btn" id="custom-url-btn">▶ Extrair & Jogar</button>
       </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <label class="btn btn-tactile" style="cursor: pointer;">
+          📂 Escolher ROM do PC (.gba, .nds, .gbc, .zip)
+          <input type="file" id="local-rom-input" accept=".gba,.nds,.zip,.7z,.rar,.gbc,.gb" style="display: none;" />
+        </label>
+      </div>
     </div>
+  </div>
 
-    <!-- Barra de Filtros de Console e Idioma -->
-    <div class="filters-bar">
+  <!-- MODAL FLUTUANTE DE SAVES & SLOTS (Abre por cima, sem empurrar a tela dos jogos) -->
+  <div class="modal-backdrop" id="saves-vault-modal">
+    <div class="modal-box saves-modal-box">
+      <div class="modal-header">
+        <h3 id="vault-modal-title">💾 Seus Saves & Estados de Jogo (PokeMule)</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn btn-drive" id="sync-drive-btn" style="padding: 5px 12px; font-size: 0.76rem;" onclick="handleGoogleDriveClick()">
+            ☁️ Sincronizar Google Drive
+          </button>
+          <button class="btn btn-tactile" onclick="closeSavesVaultModal()" style="padding: 5px 10px; font-size: 0.8rem;">✕ Fechar</button>
+        </div>
+      </div>
+      <div class="modal-content" id="vault-modal-body">
+        <!-- Renderizado dinamicamente: Lista de Jogos com Save OU Detalhes dos Slots do Jogo -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ÁREA PRINCIPAL: FILTROS EM 1 LINHA + JOGOS IMEDIATAMENTE VISÍVEIS -->
+  <main>
+    <div class="toolbar-row">
       <div class="filter-tabs" id="cat-tabs">
-        <button class="filter-chip active" data-cat="all">🔥 Todos do PokeBat</button>
-        <button class="filter-chip" data-cat="gba">🕹️ GBA Hacks & ROMs</button>
-        <button class="filter-chip" data-cat="ptbr">🇧🇷 Traduzidos PT-BR</button>
-        <button class="filter-chip" data-cat="nds">📱 Nintendo DS (NDS)</button>
-        <button class="filter-chip" data-cat="gbc">👾 Game Boy Color (GBC)</button>
+        <button class="filter-chip active" data-cat="all">Todos</button>
+        <button class="filter-chip" data-cat="gba">GBA</button>
+        <button class="filter-chip" data-cat="ptbr">Traduzidos PT-BR</button>
+        <button class="filter-chip" data-cat="nds">Nintendo DS</button>
+        <button class="filter-chip" data-cat="gbc">Game Boy Color</button>
       </div>
 
-      <div class="lang-toggle" id="lang-tabs">
-        <button class="lang-btn active" data-lang="all">Todos Idiomas</button>
-        <button class="lang-btn" data-lang="ptbr">🇧🇷 PT-BR</button>
-        <button class="lang-btn" data-lang="en">🇺🇸 Inglês</button>
+      <div class="toolbar-right">
+        <div class="lang-toggle" id="lang-tabs">
+          <button class="lang-btn active" data-lang="all">Todos</button>
+          <button class="lang-btn" data-lang="ptbr">PT-BR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <span id="count-label"></span>
       </div>
-    </div>
-
-    <div class="section-title">
-      <span id="section-heading">🎮 Catálogo Completo (PokeBat.net)</span>
-      <small id="count-label" style="color: var(--text-muted); font-weight: normal;"></small>
     </div>
 
     <div id="games-container" class="games-grid">
-      <div class="loading-state">Vasculhando catálogo completo do PokeBat.net...</div>
+      <div class="loading-state">Carregando cartuchos no PokeMule...</div>
     </div>
 
     <div class="pagination" id="pagination-bar" style="display: none;">
-      <button class="btn btn-secondary" id="prev-page-btn">⬅ Página Anterior</button>
-      <span id="page-indicator" style="font-size: 0.9rem; color: var(--text-muted);">Página 1</span>
-      <button class="btn btn-secondary" id="next-page-btn">Próxima Página ➡</button>
+      <button class="btn btn-tactile" id="prev-page-btn">⬅ Anterior</button>
+      <span id="page-indicator" style="font-size: 0.88rem; font-weight: 800; color: var(--text-muted);">Página 1</span>
+      <button class="btn btn-tactile" id="next-page-btn">Próxima ➡</button>
     </div>
 
-    <footer style="margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 0.8rem; color: var(--text-muted);">
-      PokeBat Web Hub • Preservação & Emulação Web • 
-      <a href="/privacy.html" target="_blank" style="color: #60a5fa; text-decoration: none;">Política de Privacidade</a>
+    <footer style="margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center; font-size: 0.78rem; color: var(--text-muted);">
+      <b>PokeMule</b> • Emulador Portátil entre Amigos • 
+      <a href="/privacy.html" target="_blank" style="color: var(--sky); text-decoration: none; font-weight: 700;">Política de Privacidade</a>
     </footer>
   </main>
 
@@ -874,50 +1311,67 @@
   <div class="modal-backdrop" id="details-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 id="modal-title">Detalhes da ROM</h3>
-        <button class="btn btn-secondary" onclick="closeDetailsModal()">✕ Fechar</button>
+        <h3 id="modal-title">Detalhes do Cartucho</h3>
+        <button class="btn btn-tactile" onclick="closeDetailsModal()">✕ Fechar</button>
       </div>
       <div class="modal-content" id="modal-body">
-        Carregando informações do PokeBat...
+        Carregando informações...
       </div>
     </div>
   </div>
 
-  <!-- Tela do Emulador + Barra de Ferramentas de Save, Layout NDS e Gaveta de Cheats -->
+  <!-- Tela do Emulador -->
   <div id="player-view">
+    <button id="floating-menu-pill" onclick="exitImmersiveFullscreen()" title="Mostrar Barra de Saves / Menu">
+      ⚙️ Menu / Saves
+    </button>
+
     <div class="player-topbar">
       <div class="player-title-wrap">
-        <button class="btn btn-secondary" id="back-btn">⬅ Catálogo</button>
-        <h2 id="now-playing-title">Carregando...</h2>
+        <button class="btn btn-tactile" id="back-btn">⬅ Voltar ao PokeMule</button>
+        <h2 id="now-playing-title">Jogando...</h2>
       </div>
 
       <div class="player-toolbar">
-        <!-- Botões do Cofre de Saves Local -->
-        <button class="btn btn-emerald" onclick="sendPlayerAction('SAVE_SRM')" title="Salva o arquivo .SRM (Bateria nativa do jogo / compatível com PKHeX) direto na pasta saves/ do PC">
-          💾 Salvar .SRM no PC
+        <button class="btn btn-emerald" id="fullscreen-player-btn" onclick="enterImmersiveFullscreen()" title="Jogar em Tela Cheia Real (100% da tela)">
+          ⛶ Tela Cheia
         </button>
-        <button class="btn btn-secondary" onclick="sendPlayerAction('SAVE_STATE')" title="Cria um Save State instantâneo (.state) na pasta saves/ do PC">
-          ⚡ Quick Save (.STATE)
+
+        <button class="btn btn-emerald" onclick="sendPlayerAction('SAVE_SRM')" title="Salva o arquivo nativo .SRM no seu navegador e Google Drive">
+          💾 Salvar Jogo (.SRM)
         </button>
-        <button class="btn btn-secondary" onclick="sendPlayerAction('LOAD_STATE')" title="Carrega o último Save State (.state) salvo no PC">
-          📂 Carregar .STATE
+
+        <div style="display:inline-flex; align-items:center; gap:5px; background:var(--surface-soft); padding:2px 8px; border-radius:999px; border:1px solid var(--border);">
+          <span style="font-size:0.74rem; font-weight:800; color:var(--text-muted);">Slot:</span>
+          <select id="player-state-slot-select" class="btn btn-tactile" style="padding:3px 6px; font-size:0.78rem; background:transparent; border:none; cursor:pointer; color:var(--sky); font-weight:800; outline:none;">
+            <option value="0">Slot 0</option>
+            <option value="1">Slot 1</option>
+            <option value="2">Slot 2</option>
+            <option value="3">Slot 3</option>
+          </select>
+        </div>
+
+        <button class="btn" onclick="triggerPlayerSaveState()" title="Congela o momento exato no Slot selecionado">
+          ⚡ Salvar State
         </button>
-        <label class="btn btn-secondary" style="cursor: pointer;" title="Importar um arquivo .srm ou .sav do seu PC para dentro do jogo atual">
-          📥 Importar .SRM/.SAV
+        <button class="btn btn-tactile" onclick="triggerPlayerLoadState()" title="Carrega o State do Slot selecionado">
+          📂 Carregar State
+        </button>
+
+        <label class="btn btn-tactile" style="cursor: pointer;" title="Importar um arquivo .sav ou .srm do seu computador">
+          📥 Importar .SRM
           <input type="file" id="import-srm-input" accept=".srm,.sav" style="display: none;" />
         </label>
 
-        <!-- Alternador de Tela / Dual-Screen NDS -->
-        <select id="layout-select" class="btn btn-secondary" style="padding: 7px 10px;" title="Alternar formato de tela e layout Dual-Screen do Nintendo DS">
+        <select id="layout-select" class="btn btn-tactile" style="outline: none;">
           <option value="wide|top-bottom">🖥️ Tela Cheia (Padrão)</option>
-          <option value="compact|left-right">📱 NDS Lado a Lado (Horizontal)</option>
-          <option value="wide|left-right">🖥️ NDS Widescreen Dual</option>
-          <option value="compact|top-bottom">🎮 Modo Janela Compacta</option>
+          <option value="compact|top-bottom">🕹️ Modo Moldura Compacta</option>
+          <option value="wide|left-right">📱 NDS: Telas Lado a Lado</option>
+          <option value="wide|top-bottom">📱 NDS: Telas Cima / Baixo</option>
         </select>
 
-        <!-- Botão da Gaveta de Cheats -->
-        <button class="btn btn-purple" id="toggle-cheats-btn">
-          🧬 Cheats & Códigos
+        <button class="btn btn-drive" id="toggle-cheats-btn">
+          🧬 Cheats
         </button>
       </div>
     </div>
@@ -927,11 +1381,10 @@
         <iframe id="emulator-iframe" allow="autoplay; fullscreen; gamepad"></iframe>
       </div>
 
-      <!-- Gaveta Lateral de Cheats (Fase 5) -->
       <aside id="cheats-drawer">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <h3 style="font-size: 0.95rem; color: #c4b5fd;">🧬 Cheats Compatíveis</h3>
-          <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleCheatsDrawer()">✕</button>
+          <button class="btn btn-tactile" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleCheatsDrawer()">✕</button>
         </div>
         <p id="cheats-base-label" style="font-size: 0.76rem; color: var(--text-muted);"></p>
         <div id="cheats-list-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
@@ -944,6 +1397,32 @@
     // Cache em memória da sessão do navegador: mantém a ROM aberta só enquanto não fechar a aba!
     window.sessionRomBlobs = new Map();
 
+    function toggleQuickDrawer(drawerId, btnEl) {
+      const drawer = document.getElementById(drawerId);
+      if (!drawer) return;
+      drawer.classList.toggle('open');
+      if (btnEl) btnEl.classList.toggle('active-drawer', drawer.classList.contains('open'));
+    }
+
+    const savesVaultModal = document.getElementById('saves-vault-modal');
+    const vaultModalTitle = document.getElementById('vault-modal-title');
+    const vaultModalBody = document.getElementById('vault-modal-body');
+    let currentVaultGameId = null;
+
+    function openSavesVaultModal() {
+      if (savesVaultModal) savesVaultModal.classList.add('open');
+      loadSavesVault();
+    }
+
+    function closeSavesVaultModal() {
+      if (savesVaultModal) savesVaultModal.classList.remove('open');
+      currentVaultGameId = null;
+    }
+
+    savesVaultModal?.addEventListener('click', (e) => {
+      if (e.target === savesVaultModal) closeSavesVaultModal();
+    });
+
     const gamesContainer = document.getElementById('games-container');
     const countLabel = document.getElementById('count-label');
     const searchInput = document.getElementById('search-input');
@@ -953,13 +1432,9 @@
     const localRomInput = document.getElementById('local-rom-input');
     const importSrmInput = document.getElementById('import-srm-input');
 
-    const shareNgrokBtn = document.getElementById('share-ngrok-btn');
     const googleDriveBtn = document.getElementById('google-drive-btn');
     const syncDriveBtn = document.getElementById('sync-drive-btn');
-    const configClientIdBtn = document.getElementById('config-client-id-btn');
-    const vaultHeading = document.getElementById('vault-heading');
-    const savesVaultBanner = document.getElementById('saves-vault-banner');
-    const savesListEl = document.getElementById('saves-list');
+    const savesCountBadge = document.getElementById('saves-count-badge');
 
     const paginationBar = document.getElementById('pagination-bar');
     const prevPageBtn = document.getElementById('prev-page-btn');
@@ -980,26 +1455,13 @@
     const modalTitle = document.getElementById('modal-title');
     const modalBody = document.getElementById('modal-body');
 
-    shareNgrokBtn?.addEventListener('click', async () => {
-      try {
-        const res = await fetch('/api/tunnel', { headers: { 'ngrok-skip-browser-warning': 'true' } });
-        const data = await res.json();
-        const url = data.url || 'https://tribute-gents-devotion.ngrok-free.dev';
-        await navigator.clipboard.writeText(url);
-        const originalHtml = shareNgrokBtn.innerHTML;
-        shareNgrokBtn.innerHTML = '✅ Link Copiado!';
-        setTimeout(() => { shareNgrokBtn.innerHTML = originalHtml; }, 3000);
-      } catch (_) {
-        prompt('Copie o link público do ngrok para compartilhar:', 'https://tribute-gents-devotion.ngrok-free.dev');
-      }
-    });
-
     let currentSource = 'pokebat';
     let currentCategory = 'all';
     let currentLang = 'all';
     let currentPage = 1;
     let totalPages = 1;
     let currentCatalogGames = [];
+    let userSavedGameIds = new Set();
 
     function switchSource(source) {
       if (currentSource === source) return;
@@ -1010,23 +1472,17 @@
       const tabHackdex = document.getElementById('tab-hackdex');
       const heading = document.getElementById('section-heading');
       const searchBox = document.getElementById('search-input');
-      const scrapeTitle = document.getElementById('custom-scrape-box-title');
-      const scrapeDesc = document.getElementById('custom-scrape-box-desc');
 
       if (source === 'pokebat') {
-        tabPokebat.className = 'source-tab active-pokebat';
-        tabHackdex.className = 'source-tab';
-        heading.textContent = '🎮 Catálogo PokeBat.net (PT-BR & Completo)';
-        searchBox.placeholder = 'Buscar qualquer jogo no PokeBat (ex: Unbound, Radical Red, FireRed, HeartGold, Black 2)...';
-        if (scrapeTitle) scrapeTitle.textContent = '🔗 Colar Link Direto do PokeBat.net';
-        if (scrapeDesc) scrapeDesc.innerHTML = 'Cole qualquer URL de post do <b>pokebat.net</b> ou link direto do MediaFire/TinyURL/Google Drive:';
+        tabPokebat.className = 'source-pill-btn active-pokebat';
+        tabHackdex.className = 'source-pill-btn';
+        heading.textContent = 'Catálogo PokeBat.net';
+        searchBox.placeholder = 'Buscar no PokeBat (ex: Emerald Seaglass, Unbound, FireRed, Black 2)...';
       } else {
-        tabHackdex.className = 'source-tab active-hackdex';
-        tabPokebat.className = 'source-tab';
-        heading.textContent = '👾 Catálogo HackDex.app (Romhacks Internacionais)';
-        searchBox.placeholder = 'Buscar romhack no HackDex (ex: Radical Red, Emerald Seaglass, Unbound, Gaia)...';
-        if (scrapeTitle) scrapeTitle.textContent = '🔗 Colar Link Direto do HackDex.app';
-        if (scrapeDesc) scrapeDesc.innerHTML = 'Cole qualquer link de hack do <b>hackdex.app/hack/...</b> para extrair e jogar direto:';
+        tabHackdex.className = 'source-pill-btn active-hackdex';
+        tabPokebat.className = 'source-pill-btn';
+        heading.textContent = 'Catálogo HackDex.app';
+        searchBox.placeholder = 'Buscar romhack no HackDex (ex: Radical Red, Emerald Rogue, Gaia)...';
       }
 
       loadGames();
@@ -1038,24 +1494,44 @@
       return 'badge-gba';
     }
 
-    let userSavedGameIds = new Set();
-
     function updateGoogleDriveButtons() {
       const logged = window.userSaveManager.isLoggedIn();
       const profile = window.userSaveManager.userProfile;
       if (logged) {
         const name = profile?.given_name || profile?.name || 'Conectado';
-        if (googleDriveBtn) googleDriveBtn.innerHTML = `☁️ Drive (${name})`;
-        if (syncDriveBtn) syncDriveBtn.innerHTML = `🔄 Sincronizar Drive (${name})`;
-        if (vaultHeading) vaultHeading.innerHTML = `☁️ Cofre de Saves Sincronizado no Google Drive de ${name}`;
+        if (googleDriveBtn) {
+          googleDriveBtn.innerHTML = `☁️ ${name} (Deslogar)`;
+          googleDriveBtn.title = `Conectado como ${name}. Clique para deslogar do Google Drive.`;
+        }
+        if (syncDriveBtn) {
+          syncDriveBtn.innerHTML = `🚪 Deslogar (${name})`;
+          syncDriveBtn.title = `Desconectar Google Drive`;
+        }
       } else {
-        if (googleDriveBtn) googleDriveBtn.innerHTML = '☁️ Login Google Drive';
-        if (syncDriveBtn) syncDriveBtn.innerHTML = '☁️ Conectar Meu Google Drive';
-        if (vaultHeading) vaultHeading.innerHTML = '💾 Seus Saves no Navegador (Conecte o Google Drive para salvar na sua nuvem)';
+        if (googleDriveBtn) {
+          googleDriveBtn.innerHTML = '☁️ Google Drive';
+          googleDriveBtn.title = 'Sincronizar seus saves na sua conta pessoal do Google Drive';
+        }
+        if (syncDriveBtn) {
+          syncDriveBtn.innerHTML = '☁️ Conectar Google Drive';
+          syncDriveBtn.title = 'Conectar sua conta do Google Drive';
+        }
       }
     }
 
-    async function handleGoogleDriveLogin() {
+    async function handleGoogleDriveClick() {
+      if (window.userSaveManager.isLoggedIn()) {
+        const profile = window.userSaveManager.userProfile;
+        const name = profile?.name || 'sua conta';
+        if (confirm(`Você está conectado ao Google Drive como "${name}". Deseja deslogar?`)) {
+          window.userSaveManager.logoutGoogle();
+          updateGoogleDriveButtons();
+          await loadSavesVault();
+          alert('Você foi desconectado do Google Drive.');
+        }
+        return;
+      }
+
       try {
         await window.userSaveManager.loginWithGoogle();
         updateGoogleDriveButtons();
@@ -1064,29 +1540,18 @@
       } catch (err) {
         if (err.message === 'MISSING_CLIENT_ID') {
           const cid = prompt(
-            'Para usar o Login Google Drive, cole seu Google OAuth Client ID (criado grátis em console.cloud.google.com -> Credenciais -> ID do cliente OAuth para Aplicativo da Web):\n\n(Obs: Seus saves já ficam salvos automaticamente no seu navegador mesmo sem Client ID!)',
+            'Cole seu Google OAuth Client ID (Aplicativo da Web):',
             window.userSaveManager.getClientId()
           );
           if (cid && cid.trim()) {
             window.userSaveManager.setClientId(cid.trim());
-            handleGoogleDriveLogin();
+            handleGoogleDriveClick();
           }
         } else {
           alert('Aviso ao conectar Google Drive: ' + err.message);
         }
       }
     }
-
-    googleDriveBtn?.addEventListener('click', handleGoogleDriveLogin);
-    syncDriveBtn?.addEventListener('click', handleGoogleDriveLogin);
-    configClientIdBtn?.addEventListener('click', () => {
-      const current = window.userSaveManager.getClientId();
-      const cid = prompt('Informe o Google OAuth Client ID (Aplicativo da Web):', current);
-      if (cid !== null) {
-        window.userSaveManager.setClientId(cid);
-        alert('Client ID atualizado!');
-      }
-    });
 
     async function downloadUserSave(gameId, type = 'srm') {
       const bytes = await window.userSaveManager.getSaveBytes(gameId, type);
@@ -1100,65 +1565,246 @@
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
-    // Carrega o Cofre de Saves do Próprio Visitante (IndexedDB + Google Drive)
+    async function downloadStateSlot(gameId, slot) {
+      const bytes = await window.userSaveManager.getSaveBytes(gameId, 'state', slot);
+      if (!bytes) return alert('Arquivo de state não encontrado.');
+      const blob = new Blob([bytes], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${gameId}_slot${slot}.state`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    async function confirmDeleteAllGameSaves(gameId, encTitle) {
+      const title = decodeURIComponent(encTitle);
+      if (confirm(`Tem certeza que deseja apagar TODOS os saves e states de "${title}"?`)) {
+        await window.userSaveManager.deleteGame(gameId);
+        await loadSavesVault();
+      }
+    }
+
+    async function confirmDeleteSrm(gameId) {
+      if (confirm('Tem certeza que deseja apagar o Save de Bateria (.SRM) deste jogo?')) {
+        await window.userSaveManager.deleteSrm(gameId);
+        openGameSaveDetails(gameId);
+      }
+    }
+
+    async function confirmDeleteSlot(gameId, slot) {
+      if (confirm(`Tem certeza que deseja apagar o Save State do Slot ${slot}?`)) {
+        await window.userSaveManager.deleteStateSlot(gameId, slot);
+        openGameSaveDetails(gameId);
+      }
+    }
+
+    // Carrega o Cofre de Saves no Modal Flutuante
     async function loadSavesVault() {
       try {
         updateGoogleDriveButtons();
         const saves = await window.userSaveManager.listAllSaves();
         userSavedGameIds = new Set(saves.map(s => s.id));
+        if (savesCountBadge) savesCountBadge.textContent = saves.length;
 
-        savesVaultBanner.classList.add('visible');
-        if (saves.length === 0) {
-          savesListEl.innerHTML = `
-            <div style="font-size: 0.82rem; color: var(--text-muted); padding: 6px 2px;">
-              Nenhum save gravado neste navegador ainda. Comece um jogo ou clique em <b>☁️ Conectar Meu Google Drive</b> para puxar seus saves da sua conta Google!
-            </div>
-          `;
-          return;
+        if (currentVaultGameId) {
+          openGameSaveDetails(currentVaultGameId);
+        } else {
+          renderVaultGamesList(saves);
         }
-
-        savesListEl.innerHTML = saves.map(s => {
-          const dateStr = new Date(s.updatedAt).toLocaleString('pt-BR', {
-            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-          });
-          return `
-            <div class="save-pill">
-              <div class="save-pill-title" title="${s.title}">🎮 ${s.title} <span style="color:#60a5fa">[${s.console}]</span></div>
-              <div class="save-pill-meta">
-                Último save: ${dateStr} •
-                ${s.hasSrm ? `<span style="color:#34d399">SRM (${(s.srmSize / 1024).toFixed(0)} KB)</span>` : ''}
-                ${s.hasState ? `<span style="color:#fbbf24"> • STATE</span>` : ''}
-                ${s.syncedDrive ? `<span style="color:#c4b5fd"> • ☁️ Drive</span>` : ''}
-              </div>
-              <div class="save-pill-actions">
-                ${s.downloadPageUrl ? `
-                  <button class="btn" onclick="startGame('${s.id}', '${encodeURIComponent(s.title)}', '${encodeURIComponent(s.downloadPageUrl)}', '${s.console}', '${encodeURIComponent(s.cover || '')}', 'srm')">
-                    ▶ Continuar
-                  </button>
-                  ${s.hasState ? `
-                    <button class="btn btn-secondary" onclick="startGame('${s.id}', '${encodeURIComponent(s.title)}', '${encodeURIComponent(s.downloadPageUrl)}', '${s.console}', '${encodeURIComponent(s.cover || '')}', 'state')">
-                      ⚡ Abrir State
-                    </button>
-                  ` : ''}
-                ` : ''}
-                ${s.hasSrm ? `
-                  <button class="btn btn-emerald" onclick="downloadUserSave('${s.id}', 'srm')" title="Baixar seu save .SRM (compatível com PKHeX, mGBA e MelonDS)">
-                    ⬇ .SRM
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
       } catch (e) {
         console.warn('Erro ao carregar cofre de saves do navegador:', e);
       }
     }
 
+    function renderVaultGamesList(saves) {
+      currentVaultGameId = null;
+      if (vaultModalTitle) vaultModalTitle.innerHTML = '💾 Seus Saves & Estados de Jogo (PokeMule)';
+
+      if (!saves || saves.length === 0) {
+        vaultModalBody.innerHTML = `
+          <div style="text-align:center; padding:36px 16px; color:var(--text-muted);">
+            <div style="font-size:2.2rem; margin-bottom:10px;">🎮</div>
+            <h4 style="color:var(--text); font-size:1.05rem; margin-bottom:6px;">Nenhum save encontrado neste navegador</h4>
+            <p style="font-size:0.84rem; max-width:440px; margin:0 auto 18px; line-height:1.45;">
+              Quando você jogar qualquer Pokémon e salvar no jogo (START -> SALVAR) ou fizer um Save State, ele aparecerá aqui com slots e opções de backup!
+            </p>
+            <button class="btn btn-drive" onclick="handleGoogleDriveClick()">
+              ☁️ Conectar Google Drive para puxar meus saves
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      vaultModalBody.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${saves.map(s => {
+            const dateStr = new Date(s.updatedAt).toLocaleString('pt-BR', {
+              day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+            const coverSrc = s.cover || 'https://pokebat.net/wp-content/uploads/2023/01/default.png';
+            return `
+              <div class="save-game-item">
+                <img src="${coverSrc}" class="save-game-thumb" alt="${s.title}" onerror="this.src='https://pokebat.net/wp-content/uploads/2023/01/default.png'" />
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:0.92rem; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${s.title} <span style="font-size:0.75rem; color:var(--sky)">[${s.console}]</span>
+                  </div>
+                  <div style="font-size:0.74rem; color:var(--text-muted); margin-top:4px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <span>🕒 ${dateStr}</span>
+                    <span style="color:${s.hasSrm ? 'var(--emerald)' : 'var(--text-muted)'}; font-weight:700;">
+                      🔋 Bateria: ${s.hasSrm ? `${(s.srmSize / 1024).toFixed(0)} KB` : 'Vazio'}
+                    </span>
+                    <span style="color:${s.hasState ? 'var(--amber)' : 'var(--text-muted)'}; font-weight:700;">
+                      ⚡ States: ${s.slotsCount || 0}/4 slots
+                    </span>
+                    ${s.syncedDrive ? '<span style="color:var(--purple); font-weight:800;">☁️ Na Nuvem</span>' : ''}
+                  </div>
+                </div>
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                  ${s.downloadPageUrl ? `
+                    <button class="btn btn-play" style="padding:6px 14px; font-size:0.8rem;" onclick="closeSavesVaultModal(); startGame('${s.id}', '${encodeURIComponent(s.title)}', '${encodeURIComponent(s.downloadPageUrl)}', '${s.console}', '${encodeURIComponent(s.cover || '')}', 'srm')">
+                      ▶ Jogar
+                    </button>
+                  ` : ''}
+                  <button class="btn btn-tactile" style="padding:6px 12px; font-size:0.78rem;" onclick="openGameSaveDetails('${s.id}')">
+                    ⚙️ Detalhes & Slots
+                  </button>
+                  <button class="btn btn-tactile" style="padding:6px 10px; font-size:0.78rem; color:var(--primary);" onclick="confirmDeleteAllGameSaves('${s.id}', '${encodeURIComponent(s.title)}')" title="Apagar todos os saves deste jogo">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    async function openGameSaveDetails(gameId) {
+      currentVaultGameId = gameId;
+      const record = await window.userSaveManager.getRecord(gameId);
+      if (!record) {
+        renderVaultGamesListFromData();
+        return;
+      }
+
+      if (vaultModalTitle) {
+        vaultModalTitle.innerHTML = `⚙️ Gerenciar Saves: ${record.title}`;
+      }
+
+      const hasSrm = !!(record.srmBytes && record.srmBytes.byteLength > 0);
+      const srmSizeKB = hasSrm ? (record.srmBytes.byteLength / 1024).toFixed(1) : 0;
+
+      const slots = record.stateSlots || {};
+      if (record.stateBytes && !slots[0]) {
+        slots[0] = { bytes: record.stateBytes, size: record.stateBytes.byteLength, updatedAt: record.updatedAt };
+      }
+
+      let slotsHtml = '';
+      for (let s = 0; s <= 3; s++) {
+        const slotData = slots[s];
+        const isOccupied = !!(slotData && (slotData.size || slotData.bytes));
+        const slotDate = slotData?.updatedAt ? new Date(slotData.updatedAt).toLocaleString('pt-BR') : '';
+        const slotSizeKB = slotData?.size ? (slotData.size / 1024).toFixed(0) : (slotData?.bytes?.byteLength ? (slotData.bytes.byteLength / 1024).toFixed(0) : 0);
+
+        slotsHtml += `
+          <div class="slot-card ${isOccupied ? 'occupied' : ''}">
+            <div class="slot-card-title">
+              <span>⚡ Slot ${s}</span>
+              <span style="font-size:0.7rem; color:${isOccupied ? 'var(--emerald)' : 'var(--text-muted)'}; font-weight:700;">
+                ${isOccupied ? 'Ocupado' : 'Vazio'}
+              </span>
+            </div>
+            <div style="font-size:0.73rem; color:var(--text-muted); min-height:28px;">
+              ${isOccupied ? `🕒 ${slotDate}<br>📦 ${slotSizeKB} KB` : 'Nenhum state salvo neste slot.'}
+            </div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              ${isOccupied ? `
+                <button class="btn" style="flex:1; padding:5px 8px; font-size:0.74rem;" onclick="closeSavesVaultModal(); startGame('${record.id}', '${encodeURIComponent(record.title)}', '${encodeURIComponent(record.downloadPageUrl || '')}', '${record.console || 'GBA'}', '${encodeURIComponent(record.cover || '')}', 'state', '', ${s})">
+                  ▶ Abrir
+                </button>
+                <button class="btn btn-tactile" style="padding:5px 8px; font-size:0.74rem;" onclick="downloadStateSlot('${record.id}', ${s})" title="Baixar arquivo .state">
+                  📥
+                </button>
+                <button class="btn btn-tactile" style="padding:5px 8px; font-size:0.74rem; color:var(--primary);" onclick="confirmDeleteSlot('${record.id}', ${s})" title="Apagar este slot">
+                  🗑️
+                </button>
+              ` : `
+                <div style="font-size:0.72rem; color:var(--text-muted); padding:4px 0;">Disponível para salvar no jogo</div>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      vaultModalBody.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <button class="btn btn-tactile" style="align-self:flex-start; font-size:0.8rem;" onclick="renderVaultGamesListFromData()">
+            ⬅ Voltar para Todos os Jogos
+          </button>
+
+          <!-- Card do Save de Bateria (.SRM) -->
+          <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:14px; padding:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+              <h4 style="font-size:0.95rem; color:var(--emerald); display:flex; align-items:center; gap:6px;">
+                🔋 Save de Bateria (.SRM / In-Game)
+              </h4>
+              <span style="font-size:0.75rem; color:${hasSrm ? 'var(--emerald)' : 'var(--text-muted)'}; font-weight:800;">
+                ${hasSrm ? `Ativo • ${srmSizeKB} KB` : 'Nenhum save de bateria'}
+              </span>
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; margin-bottom:12px;">
+              Este é o save padrão do Pokémon (quando você abre o menu no jogo e clica em <b>SALVAR</b>). O PokeMule salva no seu navegador e na nuvem toda vez que você salva no jogo.
+            </p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              ${hasSrm ? `
+                <button class="btn btn-play" style="padding:6px 14px; font-size:0.8rem;" onclick="closeSavesVaultModal(); startGame('${record.id}', '${encodeURIComponent(record.title)}', '${encodeURIComponent(record.downloadPageUrl || '')}', '${record.console || 'GBA'}', '${encodeURIComponent(record.cover || '')}', 'srm')">
+                  ▶ Jogar com este Save (.SRM)
+                </button>
+                <button class="btn btn-tactile" style="padding:6px 12px; font-size:0.8rem;" onclick="downloadUserSave('${record.id}', 'srm')">
+                  📥 Baixar .SRM
+                </button>
+                <button class="btn btn-tactile" style="padding:6px 12px; font-size:0.8rem; color:var(--primary);" onclick="confirmDeleteSrm('${record.id}')">
+                  🗑️ Deletar Save (.SRM)
+                </button>
+              ` : `
+                <span style="font-size:0.76rem; color:var(--text-muted);">Jogue a ROM e salve no menu do jogo para criar este arquivo.</span>
+              `}
+            </div>
+          </div>
+
+          <!-- Card de Save States com 4 Slots -->
+          <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:14px; padding:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+              <h4 style="font-size:0.95rem; color:var(--sky); display:flex; align-items:center; gap:6px;">
+                ⚡ Save States (Slots 0 a 3)
+              </h4>
+              <span style="font-size:0.75rem; color:var(--text-muted);">
+                Escolha o slot livre ou substitua um slot existente
+              </span>
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; margin-bottom:10px;">
+              Congela o momento exato em que você estava. Você pode ter até 4 pontos de restauração por jogo!
+            </p>
+            <div class="save-slots-grid">
+              ${slotsHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function renderVaultGamesListFromData() {
+      const saves = await window.userSaveManager.listAllSaves();
+      renderVaultGamesList(saves);
+    }
+
     async function loadGames() {
       const query = searchInput.value.trim();
       const sourceName = currentSource === 'hackdex' ? 'HackDex.app' : 'PokeBat.net';
-      gamesContainer.innerHTML = `<div class="loading-state">Buscando catálogo no ${sourceName}...</div>`;
+      gamesContainer.innerHTML = `<div class="loading-state">Buscando cartuchos no ${sourceName}...</div>`;
       try {
         const url = `/api/games?source=${currentSource}&q=${encodeURIComponent(query)}&cat=${currentCategory}&lang=${currentLang}&page=${currentPage}`;
         const res = await fetch(url);
@@ -1167,7 +1813,7 @@
         currentCatalogGames = games;
         totalPages = data.totalPages || 1;
 
-        countLabel.textContent = `${games.length} jogos nesta página (Página ${currentPage} de ${totalPages})`;
+        countLabel.textContent = `${games.length} jogos • Pág ${currentPage}/${totalPages}`;
 
         if (totalPages > 1) {
           paginationBar.style.display = 'flex';
@@ -1179,7 +1825,7 @@
         }
 
         if (games.length === 0) {
-          gamesContainer.innerHTML = '<div class="loading-state">Nenhum jogo encontrado para este filtro/página.</div>';
+          gamesContainer.innerHTML = '<div class="loading-state">Nenhum jogo encontrado para este filtro.</div>';
           return;
         }
 
@@ -1192,13 +1838,13 @@
           const originName = game.source === 'hackdex' ? 'HackDex.app' : 'PokeBat.net';
           return `
             <div class="game-card">
-              <div class="card-cover" onclick="openGameDetails(${idx})" title="Clique para ver Screenshots, Ficha Técnica e Versões/Mirrors">
+              <div class="card-cover" onclick="openGameDetails(${idx})" title="Ver screenshots, informações e mirrors">
                 <img src="${game.cover}" alt="${game.title}" loading="lazy" onerror="this.src='https://pokebat.net/wp-content/uploads/2023/01/default.png'" />
                 <div class="badges">
                   <span class="badge ${getConsoleBadgeClass(sys)}">${sys}</span>
-                  <span class="badge ${isPt ? 'badge-ptbr' : 'badge-en'}">${isPt ? '🇧🇷 PT-BR' : '🇺🇸 ' + (game.language || 'Inglês')}</span>
-                  ${inBrowserSession ? '<span class="badge badge-cached" title="Na memória desta aba (some ao fechar o navegador)">⚡ Na Aba</span>' : ''}
-                  ${hasSave ? '<span class="badge badge-saved">💾 Seu Save</span>' : ''}
+                  <span class="badge ${isPt ? 'badge-ptbr' : 'badge-en'}">${isPt ? 'PT-BR' : (game.language || 'EN')}</span>
+                  ${inBrowserSession ? '<span class="badge badge-cached" title="Na memória desta aba">⚡ Na Aba</span>' : ''}
+                  ${hasSave ? '<span class="badge badge-saved">💾 Save</span>' : ''}
                 </div>
               </div>
               <div class="card-body">
@@ -1209,11 +1855,11 @@
                   <button class="btn btn-play" onclick="startGame('${game.id}', '${encodeURIComponent(game.title)}', '${encodeURIComponent(game.downloadPageUrl)}', '${sys}', '${encodeURIComponent(game.cover || '')}')">
                     ▶ Jogar
                   </button>
-                  <button class="btn btn-secondary" onclick="openGameDetails(${idx})" title="Ver Ficha Completa, Screenshots, Mirrors e Seletor Multi-ROM">
-                    ℹ Ficha / Links
+                  <button class="btn btn-tactile" onclick="openGameDetails(${idx})" title="Ver Ficha Completa, Screenshots e Versões">
+                    ℹ Ficha
                   </button>
-                  <a class="btn btn-secondary" href="${game.postUrl}" target="_blank" rel="noopener" title="Abrir post original no ${originName}">
-                    🌐
+                  <a class="btn btn-tactile btn-icon-only" href="${game.postUrl}" target="_blank" rel="noopener" title="Abrir página original no ${originName}">
+                    ↗
                   </a>
                 </div>
               </div>
@@ -1225,7 +1871,6 @@
       }
     }
 
-    // Abre o Modal de Ficha Técnica, Screenshots, Mirrors e Inspecionador Multi-ROM (Fase 2 e Fase 5)
     async function openGameDetails(gameIndex) {
       const game = currentCatalogGames[gameIndex];
       if (!game) return;
@@ -1240,8 +1885,8 @@
         const details = await res.json();
 
         const linksHtml = (details.links || []).map((l, i) => `
-          <button class="btn ${l.direct ? '' : 'btn-secondary'}" onclick="closeDetailsModal(); startGame('${game.id}', '${encodeURIComponent(game.title)}', '${encodeURIComponent(l.href)}', '${game.console}', '${encodeURIComponent(game.cover || '')}')">
-            ▶ ${l.label || 'Mirror ' + (i + 1)} ${l.direct ? '⚡ (Direto)' : '🔗'}
+          <button class="btn ${l.direct ? '' : 'btn-tactile'}" onclick="closeDetailsModal(); startGame('${game.id}', '${encodeURIComponent(game.title)}', '${encodeURIComponent(l.href)}', '${game.console}', '${encodeURIComponent(game.cover || '')}')">
+            ▶ ${l.label || 'Mirror ' + (i + 1)} ${l.direct ? '⚡' : ''}
           </button>
         `).join('');
 
@@ -1250,7 +1895,7 @@
           : '';
 
         const featuresHtml = (details.features || []).length > 0
-          ? `<ul style="padding-left:18px;font-size:0.83rem;color:#d1d5db;line-height:1.55;">${details.features.map(f => `<li>${f}</li>`).join('')}</ul>`
+          ? `<ul style="padding-left:18px;font-size:0.84rem;color:var(--text);line-height:1.55;">${details.features.map(f => `<li>${f}</li>`).join('')}</ul>`
           : '';
 
         const paragraphsHtml = (details.paragraphs || []).map(p => `<p style="font-size:0.84rem;color:var(--text-muted);line-height:1.5;">${p}</p>`).join('');
@@ -1258,20 +1903,20 @@
         modalBody.innerHTML = `
           ${imagesHtml}
           <div>
-            <h4 style="font-size:0.9rem;margin-bottom:8px;color:#60a5fa;">🚀 Iniciar Jogo ou Escolher Mirror de Download:</h4>
+            <h4 style="font-size:0.9rem;margin-bottom:8px;color:var(--sky);">🚀 Iniciar Jogo ou Escolher Mirror:</h4>
             <div class="mirrors-list">
               ${linksHtml || `<button class="btn" onclick="closeDetailsModal(); startGame('${game.id}', '${encodeURIComponent(game.title)}', '${encodeURIComponent(game.downloadPageUrl)}', '${game.console}', '${encodeURIComponent(game.cover || '')}')">▶ Jogar Agora</button>`}
-              <button class="btn btn-purple" onclick="inspectMultiRomPackage('${game.id}', '${encodeURIComponent(game.title)}', '${encodeURIComponent(game.downloadPageUrl)}', '${game.console}', '${encodeURIComponent(game.cover || '')}')">
+              <button class="btn btn-drive" onclick="inspectMultiRomPackage('${game.id}', '${encodeURIComponent(game.title)}', '${encodeURIComponent(game.downloadPageUrl)}', '${game.console}', '${encodeURIComponent(game.cover || '')}')">
                 📦 Inspecionar Arquivos do ZIP (Multi-ROM)
               </button>
             </div>
           </div>
           <div id="multi-rom-inspector-box"></div>
-          ${featuresHtml ? `<div><h4 style="font-size:0.9rem;margin-bottom:6px;color:#34d399;">✨ Características & Recursos no PokeBat:</h4>${featuresHtml}</div>` : ''}
+          ${featuresHtml ? `<div><h4 style="font-size:0.9rem;margin-bottom:6px;color:var(--emerald);">✨ Características:</h4>${featuresHtml}</div>` : ''}
           ${paragraphsHtml ? `<div style="display:flex;flex-direction:column;gap:8px;">${paragraphsHtml}</div>` : ''}
         `;
       } catch (err) {
-        modalBody.innerHTML = `<div style="color:#f87171;">Erro ao carregar detalhes: ${err.message}</div>`;
+        modalBody.innerHTML = `<div style="color:var(--primary);">Erro ao carregar detalhes: ${err.message}</div>`;
       }
     }
 
@@ -1279,11 +1924,10 @@
       detailsModal.classList.remove('open');
     }
 
-    // Inspeciona se um arquivo .zip possui múltiplas versões/ROMs lá dentro (ex: Black 2 + White 2, ou Golpes PT-BR vs Inglês)
     async function inspectMultiRomPackage(id, encodedTitle, encodedUrl, sys, encodedCover) {
       const box = document.getElementById('multi-rom-inspector-box');
       if (!box) return;
-      box.innerHTML = '<div style="font-size:0.83rem;color:#fbbf24;">⏳ Baixando/inspecionando pacote compactado no servidor...</div>';
+      box.innerHTML = '<div style="font-size:0.83rem;color:var(--amber);">⏳ Inspecionando pacote compactado...</div>';
 
       try {
         const url = decodeURIComponent(encodedUrl);
@@ -1298,12 +1942,12 @@
         }
 
         box.innerHTML = `
-          <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.35);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-            <div style="font-size:0.84rem;font-weight:700;color:#c4b5fd;">📦 Arquivos encontrados dentro de "${data.archiveName}":</div>
+          <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:0.84rem;font-weight:800;color:var(--sky);">📦 Versões dentro de "${data.archiveName}":</div>
             ${entries.map(e => `
               <div class="rom-entry-item">
                 <div>
-                  <div style="font-size:0.84rem;font-weight:600;">${e.baseName}</div>
+                  <div style="font-size:0.84rem;font-weight:700;">${e.baseName}</div>
                   ${e.sizeMB ? `<div style="font-size:0.72rem;color:var(--text-muted);">${e.sizeMB} MB</div>` : ''}
                 </div>
                 <button class="btn" onclick="closeDetailsModal(); startGame('${id}', '${encodedTitle}', '${encodedUrl}', '${sys}', '${encodedCover}', '', '${encodeURIComponent(e.fileName)}')">
@@ -1314,7 +1958,7 @@
           </div>
         `;
       } catch (err) {
-        box.innerHTML = `<div style="font-size:0.82rem;color:#f87171;">Não foi possível inspecionar pacote: ${err.message}</div>`;
+        box.innerHTML = `<div style="font-size:0.82rem;color:var(--primary);">Não foi possível inspecionar pacote: ${err.message}</div>`;
       }
     }
 
@@ -1326,11 +1970,11 @@
         cheatsListContainer.innerHTML = (data.cheats || []).map((c, idx) => `
           <div class="cheat-card">
             <h4>${c.title}</h4>
-            <div style="font-size:0.7rem;color:#60a5fa;">${c.type}</div>
+            <div style="font-size:0.7rem;color:var(--sky);">${c.type}</div>
             <div class="cheat-code-box">${c.code}</div>
             <div class="cheat-note">${c.note}</div>
             <div style="display:flex;gap:6px;margin-top:4px;">
-              <button class="btn btn-purple" style="flex:1;padding:6px;font-size:0.76rem;" onclick="applyCheatToPlayer(${idx}, '${encodeURIComponent(c.title)}', '${encodeURIComponent(c.code)}')">
+              <button class="btn btn-drive" style="flex:1;padding:6px;font-size:0.76rem;" onclick="applyCheatToPlayer(${idx}, '${encodeURIComponent(c.title)}', '${encodeURIComponent(c.code)}')">
                 ⚡ Ativar / Copiar Código
               </button>
             </div>
@@ -1359,10 +2003,22 @@
 
     toggleCheatsBtn.addEventListener('click', toggleCheatsDrawer);
 
-    function sendPlayerAction(action) {
+    function sendPlayerAction(action, payload = {}) {
       if (emulatorIframe.contentWindow) {
-        emulatorIframe.contentWindow.postMessage({ action }, '*');
+        emulatorIframe.contentWindow.postMessage({ action, ...payload }, '*');
       }
+    }
+
+    function triggerPlayerSaveState() {
+      const slotEl = document.getElementById('player-state-slot-select');
+      const slot = slotEl ? (parseInt(slotEl.value, 10) || 0) : 0;
+      sendPlayerAction('SAVE_STATE', { slot });
+    }
+
+    function triggerPlayerLoadState() {
+      const slotEl = document.getElementById('player-state-slot-select');
+      const slot = slotEl ? (parseInt(slotEl.value, 10) || 0) : 0;
+      sendPlayerAction('LOAD_STATE', { slot });
     }
 
     layoutSelect.addEventListener('change', () => {
@@ -1388,33 +2044,73 @@
       }
     });
 
-    function startGame(id, encodedTitle, encodedDownloadUrl, consoleType = 'GBA', encodedCover = '', autoLoadType = '', encodedEntry = '') {
+    function enterImmersiveFullscreen() {
+      playerView.classList.add('immersive-fullscreen');
+      try {
+        const reqFs =
+          playerView.requestFullscreen ||
+          playerView.webkitRequestFullscreen ||
+          playerView.msRequestFullscreen;
+        if (reqFs && !document.fullscreenElement && !document.webkitFullscreenElement) {
+          reqFs.call(playerView).catch(() => {});
+        }
+      } catch (_) {}
+    }
+
+    function exitImmersiveFullscreen() {
+      playerView.classList.remove('immersive-fullscreen');
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exitFs) exitFs.call(document).catch(() => {});
+        }
+      } catch (_) {}
+    }
+
+    function startGame(id, encodedTitle, encodedDownloadUrl, consoleType = 'GBA', encodedCover = '', autoLoadType = '', encodedEntry = '', autoLoadSlot = 0) {
       const title = decodeURIComponent(encodedTitle);
       const downloadUrl = decodeURIComponent(encodedDownloadUrl);
       const cover = encodedCover ? decodeURIComponent(encodedCover) : '';
       const entry = encodedEntry ? decodeURIComponent(encodedEntry) : '';
 
-      nowPlayingTitle.textContent = `${title} [${consoleType}]`;
+      // VINCULAÇÃO COM A VERSÃO DO JOGO:
+      // Se for um arquivo específico de um pacote Multi-ROM (entry), isola o ID e o Título
+      // para que cada versão tenha seu save .SRM e seus 4 slots de State independentes!
+      const effectiveId = entry
+        ? `${id}__${entry.replace(/[^a-zA-Z0-9_-]/g, '_').slice(-25)}`
+        : id;
+      const displayTitle = entry
+        ? `${title} (${entry.replace(/\.[a-zA-Z0-9]+$/i, '').slice(0, 30)})`
+        : title;
+
+      nowPlayingTitle.textContent = `${displayTitle} [${consoleType}]`;
       playerView.classList.add('active');
+
+      // No celular, já abre automaticamente em Tela Cheia Real (100% da tela) ao tocar em Jogar!
+      if (window.innerWidth <= 820) {
+        enterImmersiveFullscreen();
+      }
+
       loadCheatsForGame(title, consoleType);
 
       let romStreamUrl = `/api/rom?id=${encodeURIComponent(id)}&url=${encodeURIComponent(downloadUrl)}`;
       if (entry) romStreamUrl += `&entry=${encodeURIComponent(entry)}`;
 
       const playerParams = new URLSearchParams({
-        id,
+        id: effectiveId,
         rom: romStreamUrl,
-        title,
+        title: displayTitle,
         console: consoleType,
         url: downloadUrl,
         cover,
-        autoload: autoLoadType
+        autoload: autoLoadType,
+        slot: String(autoLoadSlot || 0),
+        entry
       });
 
       emulatorIframe.src = `/player.html?${playerParams.toString()}`;
     }
 
-    // Tabs de Categoria
     document.querySelectorAll('#cat-tabs .filter-chip').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#cat-tabs .filter-chip').forEach(b => b.classList.remove('active'));
@@ -1425,7 +2121,6 @@
       });
     });
 
-    // Tabs de Idioma
     document.querySelectorAll('#lang-tabs .lang-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#lang-tabs .lang-btn').forEach(b => b.classList.remove('active'));
@@ -1435,7 +2130,6 @@
       });
     });
 
-    // Paginação
     prevPageBtn.addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
@@ -1452,7 +2146,6 @@
       }
     });
 
-    // Abrir link colado pelo usuário
     customUrlBtn.addEventListener('click', async () => {
       const rawUrl = customUrlInput.value.trim();
       if (!rawUrl) return;
@@ -1483,7 +2176,6 @@
       }
     });
 
-    // Abrir ROM local (.gba / .nds / .gbc / .zip)
     localRomInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -1495,11 +2187,15 @@
 
       nowPlayingTitle.textContent = `${file.name} [${sys}]`;
       playerView.classList.add('active');
+      if (window.innerWidth <= 820) {
+        enterImmersiveFullscreen();
+      }
       loadCheatsForGame(file.name, sys);
       emulatorIframe.src = `/player.html?id=${encodeURIComponent(localId)}&blob=${encodeURIComponent(blobUrl)}&title=${encodeURIComponent(file.name)}&console=${sys}`;
     });
 
     backBtn.addEventListener('click', () => {
+      exitImmersiveFullscreen();
       emulatorIframe.src = 'about:blank';
       playerView.classList.remove('active');
       cheatsDrawer.classList.remove('open');
@@ -1517,6 +2213,13 @@
         loadGames();
       }
     });
+
+    // Registra o Service Worker do PWA para permitir instalar como aplicativo no celular!
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
 
     loadSavesVault();
     loadGames();
