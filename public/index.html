@@ -49,6 +49,14 @@
       padding: 0;
     }
 
+    html {
+      box-sizing: border-box;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      -webkit-text-size-adjust: 100%;
+    }
+
     ::selection {
       background: var(--primary);
       color: #fff;
@@ -72,10 +80,16 @@
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       caret-color: var(--primary);
       transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ==========================================================================
@@ -84,11 +98,17 @@
     header {
       background: var(--header-bg);
       backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 50;
       padding: 10px 20px;
+      padding-top: max(10px, env(safe-area-inset-top));
+      padding-left: max(20px, env(safe-area-inset-left));
+      padding-right: max(20px, env(safe-area-inset-right));
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .navbar-inner {
@@ -479,6 +499,10 @@
       width: 100%;
       margin: 0 auto;
       padding: 16px 20px 36px;
+      padding-left: max(20px, env(safe-area-inset-left));
+      padding-right: max(20px, env(safe-area-inset-right));
+      padding-bottom: max(36px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
       flex: 1;
     }
 
@@ -831,9 +855,17 @@
       display: none;
       position: fixed;
       inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       background: #090812;
       z-index: 100;
       flex-direction: column;
+      touch-action: none;
+      overscroll-behavior: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     #player-view.active {
@@ -845,12 +877,19 @@
       background: #161324;
       border-bottom: 1px solid #2f294a;
       padding: 8px 18px;
+      padding-top: max(8px, env(safe-area-inset-top));
+      padding-left: max(18px, env(safe-area-inset-left));
+      padding-right: max(18px, env(safe-area-inset-right));
+      padding-bottom: 8px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
       color: #f8f6ff;
+      box-sizing: border-box;
+      position: relative;
+      z-index: 200;
     }
 
     .player-title-wrap {
@@ -909,6 +948,8 @@
       display: flex;
       overflow: hidden;
       position: relative;
+      touch-action: none;
+      overscroll-behavior: none;
     }
 
     #emulator-stage {
@@ -918,12 +959,15 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: none;
     }
 
     #emulator-iframe {
       width: 100%;
       height: 100%;
       border: none;
+      touch-action: none;
     }
 
     #cheats-drawer {
@@ -979,38 +1023,147 @@
       display: none !important;
     }
 
+    /* Barra Flutuante de Controle no Modo Imersivo / Mobile */
+    #player-floating-bar {
+      display: none;
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(16px, env(safe-area-inset-left));
+      z-index: 250;
+      gap: 8px;
+      align-items: center;
+      pointer-events: auto;
+    }
+
+    #player-view.immersive-fullscreen #player-floating-bar {
+      display: inline-flex;
+    }
+
+    .player-float-btn {
+      background: rgba(22, 19, 36, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #f8f6ff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+      transition: opacity 0.2s ease, transform 0.15s ease, background 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+      -webkit-user-select: none;
+      opacity: 0.88;
+    }
+
+    .player-float-btn:hover,
+    .player-float-btn:active {
+      opacity: 1;
+      transform: scale(1.04);
+      background: rgba(35, 30, 58, 0.96);
+      border-color: var(--sky);
+    }
+
+    /* Retrocompatibilidade com floating-menu-pill */
     #floating-menu-pill {
       display: none;
       position: fixed;
-      top: env(safe-area-inset-top, 10px);
-      left: 10px;
-      margin-top: 6px;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(16px, env(safe-area-inset-left));
       z-index: 250;
-      background: rgba(22, 19, 36, 0.78);
-      backdrop-filter: blur(8px);
+      background: rgba(22, 19, 36, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       color: #f8f6ff;
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 999px;
-      padding: 6px 12px;
+      padding: 7px 14px;
       font-family: inherit;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
       transition: opacity 0.2s ease, transform 0.15s ease;
-      opacity: 0.78;
-    }
-
-    #floating-menu-pill:hover,
-    #floating-menu-pill:active {
-      opacity: 1;
-      transform: scale(1.04);
+      opacity: 0.88;
     }
 
     #player-view.immersive-fullscreen #floating-menu-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
+    }
+
+    /* Modal / Overlay de Guia de Rotação (especialmente no Safari / iPhone) */
+    .rotate-prompt-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(9, 8, 18, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      padding-top: max(20px, env(safe-area-inset-top));
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      transition: opacity 0.25s ease;
+    }
+
+    .rotate-prompt-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border-highlight);
+      border-radius: 20px;
+      padding: 24px 20px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+    }
+
+    .rotate-anim-wrap {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+    }
+
+    .rotate-spin-arrow {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      font-size: 1.3rem;
+      animation: spin-cw 2.4s linear infinite;
+    }
+
+    @keyframes spin-cw {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .rotate-prompt-card h3 {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.15rem;
+      color: #fff;
+    }
+
+    .rotate-prompt-card p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
     }
 
     @media (max-width: 900px) {
@@ -1031,67 +1184,192 @@
     @media (max-width: 680px) {
       header {
         padding: 8px 10px;
+        padding-top: max(8px, env(safe-area-inset-top));
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+        padding-bottom: 8px;
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
       }
       .navbar-inner {
+        width: 100%;
+        max-width: 100%;
         gap: 8px;
       }
       .nav-left {
         width: 100%;
+        display: flex;
+        align-items: center;
         justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+      }
+      .brand {
+        min-width: 0;
+        flex-shrink: 1;
         gap: 8px;
       }
       .brand-logo {
         width: 32px;
         height: 32px;
         border-radius: 9px;
+        flex-shrink: 0;
       }
       .brand-logo svg {
         width: 18px;
         height: 18px;
       }
+      .brand-text {
+        min-width: 0;
+        overflow: hidden;
+      }
       .brand-text h1 {
-        font-size: 1.18rem;
+        font-size: 1.15rem;
+        white-space: nowrap;
       }
       .brand-text small {
         font-size: 0.6rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 110px;
       }
       .source-segmented {
-        padding: 3px;
+        flex-shrink: 0;
+        padding: 2px;
+        gap: 3px;
       }
       .source-pill-btn {
         font-size: 0.72rem;
-        padding: 5px 10px;
+        padding: 5px 8px;
+        gap: 4px;
+        white-space: nowrap;
       }
       .nav-right {
         width: 100%;
-        justify-content: center;
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
         gap: 6px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 3px 1px;
+        box-sizing: border-box;
+        order: 3;
+      }
+      .nav-right::-webkit-scrollbar {
+        display: none;
       }
       .nav-right .btn {
         padding: 6px 10px;
         font-size: 0.74rem;
+        flex-shrink: 0;
+        white-space: nowrap;
       }
       .nav-center {
-        padding: 2px 5px 2px 10px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 2px 4px 2px 10px;
+        order: 2;
       }
       .nav-center input {
         font-size: 0.8rem;
         padding: 5px 6px;
+        min-width: 0;
+      }
+
+      /* Gavetas no Celular */
+      .quick-tools-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .quick-url-form {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        flex-direction: column;
+      }
+      .quick-url-form input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .quick-url-form .btn {
+        width: 100%;
+      }
+      .patcher-box {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .patcher-box > div {
+        max-width: 100%;
+      }
+
+      /* Modais no celular */
+      .modal-backdrop {
+        padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      }
+      .modal-box {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px;
+      }
+      .modal-header {
+        padding: 12px 14px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .modal-header h3 {
+        font-size: 0.95rem;
+      }
+      .modal-content {
+        padding: 14px 14px;
+      }
+      .wiki-modal-box .modal-content > div:first-child {
+        flex-wrap: wrap;
       }
 
       main {
         padding: 10px 10px 28px;
+        padding-top: 10px;
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+        padding-bottom: max(28px, env(safe-area-inset-bottom));
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      .continue-shelf-container {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+      }
+      .continue-shelf-cards {
+        width: 100%;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
       }
       .toolbar-row {
         gap: 8px;
         margin-bottom: 12px;
+        width: 100%;
+        max-width: 100%;
       }
       .filter-tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
         width: 100%;
+        max-width: 100%;
         padding-bottom: 2px;
         scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
       }
       .filter-tabs::-webkit-scrollbar {
         display: none;
@@ -1111,6 +1389,8 @@
       .games-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
+        width: 100%;
+        max-width: 100%;
       }
       .game-card {
         padding-top: 14px;
@@ -1181,14 +1461,44 @@
 
       /* Barra do player enxuta no celular quando aberta */
       .player-topbar {
-        padding: 6px 10px;
-        gap: 6px;
+        padding-top: max(8px, env(safe-area-inset-top));
+        padding-left: max(18px, env(safe-area-inset-left));
+        padding-right: max(18px, env(safe-area-inset-right));
+        padding-bottom: 8px;
+        gap: 8px;
+        box-sizing: border-box;
+      }
+      .player-title-wrap {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+      }
+      .player-title-wrap h2 {
+        font-size: 0.84rem;
+        max-width: 58vw;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #back-btn {
+        padding: 6px 12px;
+        font-size: 0.76rem;
+        flex-shrink: 0;
       }
       .player-toolbar {
         width: 100%;
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+      }
+      .player-toolbar::-webkit-scrollbar {
+        display: none;
       }
       .player-toolbar .btn {
         white-space: nowrap;
@@ -1204,7 +1514,13 @@
         inset: 0;
         width: 100%;
         z-index: 260;
+        padding-top: max(16px, env(safe-area-inset-top));
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+        box-sizing: border-box;
       }
+    }
     }
 
     /* ==========================================================================
@@ -1618,9 +1934,30 @@
 
   <!-- Tela do Emulador -->
   <div id="player-view">
-    <button id="floating-menu-pill" onclick="exitImmersiveFullscreen()" title="Mostrar Barra de Saves / Menu">
-      ⚙️ Menu / Saves
-    </button>
+    <!-- Controles Flutuantes com Safe Area Inset no iPhone (Sem colidir com a câmera) -->
+    <div id="player-floating-bar">
+      <button class="player-float-btn" id="floating-back-btn" onclick="exitGameAndPlayer()" title="Sair do Jogo e Voltar ao PokeMule">
+        ⬅ Voltar
+      </button>
+      <button class="player-float-btn" id="floating-menu-btn" onclick="togglePlayerTopbar()" title="Opções de Saves, Velocidade e Menu">
+        ⚙️ Menu / Saves
+      </button>
+    </div>
+
+    <!-- Aviso Elegante de Rotação para Celular (especialmente iPhones onde screen.orientation.lock é restrito pelo Safari) -->
+    <div id="rotate-device-prompt" class="rotate-prompt-overlay" style="display: none;">
+      <div class="rotate-prompt-card">
+        <div class="rotate-anim-wrap">
+          <div class="phone-rotate-icon">📱</div>
+          <div class="rotate-spin-arrow">🔄</div>
+        </div>
+        <h3>Gire o celular na horizontal</h3>
+        <p>Jogue em tela cheia com a melhor visão e controles virtuais nas laterais!</p>
+        <button class="btn btn-tactile" onclick="dismissRotatePrompt()" style="margin-top: 6px; font-size: 0.76rem; padding: 6px 14px;">
+          Continuar assim mesmo
+        </button>
+      </div>
+    </div>
 
     <div class="player-topbar">
       <div class="player-title-wrap">
@@ -2926,17 +3263,70 @@
       }
     });
 
-    function enterImmersiveFullscreen() {
+    let rotatePromptDismissed = false;
+
+    function checkAndPromptOrientation() {
+      const isMobile = window.innerWidth <= 900 || window.innerHeight <= 900 || 'ontouchstart' in window || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (!isMobile) return;
+      if (!playerView.classList.contains('active')) return;
+
+      const promptEl = document.getElementById('rotate-device-prompt');
+      if (!promptEl) return;
+
+      const isPortrait = window.innerHeight > window.innerWidth;
+      if (isPortrait && !rotatePromptDismissed) {
+        promptEl.style.display = 'flex';
+      } else {
+        promptEl.style.display = 'none';
+      }
+    }
+
+    function dismissRotatePrompt() {
+      rotatePromptDismissed = true;
+      const promptEl = document.getElementById('rotate-device-prompt');
+      if (promptEl) promptEl.style.display = 'none';
+    }
+
+    window.addEventListener('resize', checkAndPromptOrientation);
+    window.addEventListener('orientationchange', () => setTimeout(checkAndPromptOrientation, 250));
+    if (screen.orientation && screen.orientation.addEventListener) {
+      screen.orientation.addEventListener('change', checkAndPromptOrientation);
+    }
+
+    async function enterImmersiveFullscreen() {
       playerView.classList.add('immersive-fullscreen');
+
+      const el = document.documentElement;
       try {
         const reqFs =
+          el.requestFullscreen ||
+          el.webkitRequestFullscreen ||
+          el.mozRequestFullScreen ||
+          el.msRequestFullscreen ||
           playerView.requestFullscreen ||
-          playerView.webkitRequestFullscreen ||
-          playerView.msRequestFullscreen;
+          playerView.webkitRequestFullscreen;
         if (reqFs && !document.fullscreenElement && !document.webkitFullscreenElement) {
-          reqFs.call(playerView).catch(() => {});
+          await reqFs.call(el).catch(() => {});
         }
       } catch (_) {}
+
+      // Tenta travar a orientação em Landscape (rotaciona o celular automaticamente no Android/Chrome)
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape').catch(() => {});
+        } else if (screen.lockOrientation) {
+          screen.lockOrientation('landscape');
+        } else if (screen.webkitLockOrientation) {
+          screen.webkitLockOrientation('landscape');
+        } else if (screen.mozLockOrientation) {
+          screen.mozLockOrientation('landscape');
+        } else if (screen.msLockOrientation) {
+          screen.msLockOrientation('landscape');
+        }
+      } catch (_) {}
+
+      rotatePromptDismissed = false;
+      setTimeout(checkAndPromptOrientation, 300);
     }
 
     function exitImmersiveFullscreen() {
@@ -2947,6 +3337,35 @@
           if (exitFs) exitFs.call(document).catch(() => {});
         }
       } catch (_) {}
+    }
+
+    function togglePlayerTopbar() {
+      if (playerView.classList.contains('immersive-fullscreen')) {
+        exitImmersiveFullscreen();
+      } else {
+        enterImmersiveFullscreen();
+      }
+    }
+
+    function exitGameAndPlayer() {
+      exitImmersiveFullscreen();
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        } else if (screen.unlockOrientation) {
+          screen.unlockOrientation();
+        }
+      } catch (_) {}
+      dismissRotatePrompt();
+      emulatorIframe.src = 'about:blank';
+      playerView.classList.remove('active');
+      cheatsDrawer.classList.remove('open');
+      // Libera imediatamente a memória RAM das ROMs carregadas
+      if (window.sessionRomBlobs) {
+        window.sessionRomBlobs.clear();
+      }
+      loadSavesVault();
+      loadGames();
     }
 
     function startGame(id, encodedTitle, encodedDownloadUrl, consoleType = 'GBA', encodedCover = '', autoLoadType = '', encodedEntry = '', autoLoadSlot = 0, directBlob = '') {
@@ -2982,8 +3401,9 @@
         if (ndsWrap) ndsWrap.style.display = 'none';
       }
 
-      // No celular, já abre automaticamente em Tela Cheia Real (100% da tela) ao tocar em Jogar!
-      if (window.innerWidth <= 820) {
+      // No celular, já abre automaticamente em Tela Cheia e Paisagem (rotaciona a tela) ao tocar em Jogar!
+      const isMobile = window.innerWidth <= 900 || window.innerHeight <= 900 || 'ontouchstart' in window || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
         enterImmersiveFullscreen();
       }
 
@@ -3090,25 +3510,15 @@
       nowPlayingTitle.textContent = `${file.name} [${sys}]`;
       playerView.classList.add('active');
       resetEmulatorSpeed();
-      if (window.innerWidth <= 820) {
+      const isMobile = window.innerWidth <= 900 || window.innerHeight <= 900 || 'ontouchstart' in window || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
         enterImmersiveFullscreen();
       }
       loadCheatsForGame(file.name, sys);
       emulatorIframe.src = `/player.html?id=${encodeURIComponent(localId)}&blob=${encodeURIComponent(blobUrl)}&title=${encodeURIComponent(file.name)}&console=${sys}`;
     });
 
-    backBtn.addEventListener('click', () => {
-      exitImmersiveFullscreen();
-      emulatorIframe.src = 'about:blank';
-      playerView.classList.remove('active');
-      cheatsDrawer.classList.remove('open');
-      // Libera imediatamente a memória RAM das ROMs carregadas
-      if (window.sessionRomBlobs) {
-        window.sessionRomBlobs.clear();
-      }
-      loadSavesVault();
-      loadGames();
-    });
+    backBtn.addEventListener('click', exitGameAndPlayer);
 
     async function clearRomMemoryCache() {
       const btn = document.getElementById('clear-cache-btn');
