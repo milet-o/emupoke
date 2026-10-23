@@ -1023,79 +1023,143 @@
       display: none !important;
     }
 
-    /* Barra Flutuante de Controle no Modo Imersivo / Mobile */
-    #player-floating-bar {
+    /* Botão Flutuante dos 3 Pontinhos (Discreto no canto, com Safe Area) */
+    #player-menu-trigger-btn {
       display: none;
       position: fixed;
       top: max(12px, env(safe-area-inset-top));
       left: max(16px, env(safe-area-inset-left));
-      z-index: 250;
-      gap: 8px;
-      align-items: center;
-      pointer-events: auto;
-    }
-
-    #player-view.immersive-fullscreen #player-floating-bar {
-      display: inline-flex;
-    }
-
-    .player-float-btn {
-      background: rgba(22, 19, 36, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      z-index: 270;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(22, 19, 36, 0.76);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       color: #f8f6ff;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 999px;
-      padding: 7px 14px;
-      font-family: inherit;
-      font-size: 0.78rem;
-      font-weight: 800;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
-      transition: opacity 0.2s ease, transform 0.15s ease, background 0.2s ease;
-      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+      transition: opacity 0.2s ease, transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+      opacity: 0.65;
       user-select: none;
       -webkit-user-select: none;
-      opacity: 0.88;
     }
 
-    .player-float-btn:hover,
-    .player-float-btn:active {
+    #player-menu-trigger-btn:hover,
+    #player-menu-trigger-btn:active,
+    #player-menu-trigger-btn.active {
       opacity: 1;
-      transform: scale(1.04);
+      transform: scale(1.06);
       background: rgba(35, 30, 58, 0.96);
       border-color: var(--sky);
+      color: var(--sky);
     }
 
-    /* Retrocompatibilidade com floating-menu-pill */
-    #floating-menu-pill {
-      display: none;
+    #player-view.immersive-fullscreen #player-menu-trigger-btn {
+      display: flex;
+    }
+
+    /* Menu Flutuante Aberto pelos 3 Pontinhos */
+    .player-quick-menu-box {
       position: fixed;
-      top: max(12px, env(safe-area-inset-top));
+      top: calc(max(12px, env(safe-area-inset-top)) + 46px);
       left: max(16px, env(safe-area-inset-left));
-      z-index: 250;
-      background: rgba(22, 19, 36, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      z-index: 280;
+      background: rgba(27, 23, 44, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid var(--border-highlight);
+      border-radius: 18px;
+      padding: 14px 16px;
+      width: 290px;
+      max-width: calc(100vw - 32px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: menu-pop-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+    }
+
+    @keyframes menu-pop-in {
+      from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .quick-menu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .quick-menu-header span {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
       color: #f8f6ff;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 999px;
-      padding: 7px 14px;
-      font-family: inherit;
-      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+    }
+
+    .quick-menu-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
-      transition: opacity 0.2s ease, transform 0.15s ease;
-      opacity: 0.88;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: color 0.15s ease;
     }
 
-    #player-view.immersive-fullscreen #floating-menu-pill {
-      display: inline-flex;
+    .quick-menu-close-btn:hover {
+      color: #fff;
+    }
+
+    .quick-menu-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .quick-menu-row {
+      display: flex;
+      gap: 6px;
       align-items: center;
-      gap: 5px;
+    }
+
+    .btn-exit {
+      background: linear-gradient(135deg, #ff5460 0%, #d8313e 100%);
+      color: #fff;
+      font-weight: 800;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+    }
+
+    .btn-exit:hover {
+      background: #ff3b49;
+    }
+
+    /* Retrocompatibilidade com referências antigas */
+    #player-floating-bar, #floating-menu-pill {
+      display: none !important;
     }
 
     /* Modal / Overlay de Guia de Rotação (especialmente no Safari / iPhone) */
@@ -1934,14 +1998,50 @@
 
   <!-- Tela do Emulador -->
   <div id="player-view">
-    <!-- Controles Flutuantes com Safe Area Inset no iPhone (Sem colidir com a câmera) -->
-    <div id="player-floating-bar">
-      <button class="player-float-btn" id="floating-back-btn" onclick="exitGameAndPlayer()" title="Sair do Jogo e Voltar ao PokeMule">
-        ⬅ Voltar
-      </button>
-      <button class="player-float-btn" id="floating-menu-btn" onclick="togglePlayerTopbar()" title="Opções de Saves, Velocidade e Menu">
-        ⚙️ Menu / Saves
-      </button>
+    <!-- Botão Flutuante dos 3 Pontinhos (Discreto no canto, com Safe Area) -->
+    <button id="player-menu-trigger-btn" onclick="togglePlayerQuickMenu()" title="Opções e Menu do Jogo">
+      ⋮
+    </button>
+
+    <!-- Menu Flutuante Aberto pelos 3 Pontinhos -->
+    <div id="player-quick-menu" class="player-quick-menu-box" style="display: none;">
+      <div class="quick-menu-header">
+        <span id="quick-menu-game-title">Opções do Jogo</span>
+        <button class="quick-menu-close-btn" onclick="closePlayerQuickMenu()" title="Fechar Menu">✕</button>
+      </div>
+      <div class="quick-menu-actions">
+        <button class="btn btn-exit" onclick="exitGameAndPlayer()">
+          ⬅ Sair e Voltar ao PokeMule
+        </button>
+        <button class="btn btn-emerald" onclick="sendPlayerAction('SAVE_SRM'); closePlayerQuickMenu();">
+          💾 Salvar Jogo (.SRM)
+        </button>
+        <div class="quick-menu-row">
+          <button class="btn" style="flex:1;" onclick="triggerPlayerSaveState(); closePlayerQuickMenu();" title="Salvar State no slot">
+            ⚡ Salvar State
+          </button>
+          <button class="btn btn-tactile" style="flex:1;" onclick="triggerPlayerLoadState(); closePlayerQuickMenu();" title="Carregar State do slot">
+            📂 Carregar State
+          </button>
+          <select id="quick-menu-slot-select" class="btn btn-tactile" onchange="syncPlayerSlot(this.value)" style="padding:4px 8px; font-size:0.75rem;">
+            <option value="0">Slot 0</option>
+            <option value="1">Slot 1</option>
+            <option value="2">Slot 2</option>
+            <option value="3">Slot 3</option>
+          </select>
+        </div>
+        <div class="quick-menu-row" style="align-items:center; justify-content:space-between;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Velocidade:</span>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-tactile speed-chip" onclick="setSpeedPreset(1); closePlayerQuickMenu();">1x</button>
+            <button class="btn btn-tactile speed-chip" onclick="setSpeedPreset(2); closePlayerQuickMenu();">2x</button>
+            <button class="btn btn-tactile speed-chip" onclick="setSpeedPreset(3); closePlayerQuickMenu();">3x</button>
+          </div>
+        </div>
+        <button class="btn btn-tactile" onclick="togglePlayerTopbar(); closePlayerQuickMenu();" style="font-size:0.74rem;">
+          ⚙️ Mais Opções (Barra Completa)
+        </button>
+      </div>
     </div>
 
     <!-- Aviso Elegante de Rotação para Celular (especialmente iPhones onde screen.orientation.lock é restrito pelo Safari) -->
@@ -3347,7 +3447,51 @@
       }
     }
 
+    function togglePlayerQuickMenu() {
+      const menu = document.getElementById('player-quick-menu');
+      const trigger = document.getElementById('player-menu-trigger-btn');
+      if (!menu) return;
+      const isOpening = menu.style.display === 'none' || !menu.style.display;
+      if (isOpening) {
+        const titleEl = document.getElementById('quick-menu-game-title');
+        if (titleEl && nowPlayingTitle) {
+          titleEl.textContent = nowPlayingTitle.textContent || 'Opções do Jogo';
+        }
+        const slotEl = document.getElementById('player-state-slot-select');
+        const quickSlot = document.getElementById('quick-menu-slot-select');
+        if (slotEl && quickSlot) quickSlot.value = slotEl.value;
+        menu.style.display = 'flex';
+        trigger?.classList.add('active');
+      } else {
+        menu.style.display = 'none';
+        trigger?.classList.remove('active');
+      }
+    }
+
+    function closePlayerQuickMenu() {
+      const menu = document.getElementById('player-quick-menu');
+      const trigger = document.getElementById('player-menu-trigger-btn');
+      if (menu) menu.style.display = 'none';
+      if (trigger) trigger.classList.remove('active');
+    }
+
+    function syncPlayerSlot(val) {
+      const mainSelect = document.getElementById('player-state-slot-select');
+      if (mainSelect) mainSelect.value = val;
+    }
+
+    window.addEventListener('click', (e) => {
+      const menu = document.getElementById('player-quick-menu');
+      const trigger = document.getElementById('player-menu-trigger-btn');
+      if (menu && menu.style.display !== 'none') {
+        if (!menu.contains(e.target) && !trigger?.contains(e.target)) {
+          closePlayerQuickMenu();
+        }
+      }
+    });
+
     function exitGameAndPlayer() {
+      closePlayerQuickMenu();
       exitImmersiveFullscreen();
       try {
         if (screen.orientation && screen.orientation.unlock) {
@@ -3388,6 +3532,15 @@
       nowPlayingTitle.textContent = `${displayTitle} [${consoleType}]`;
       playerView.classList.add('active');
       resetEmulatorSpeed();
+
+      // Ativa áudio web nativamente no clique de jogar para iOS e navegadores móveis
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          if (!window.__pokeAudioCtx) window.__pokeAudioCtx = new AudioCtx();
+          if (window.__pokeAudioCtx.state === 'suspended') window.__pokeAudioCtx.resume().catch(() => {});
+        }
+      } catch (_) {}
 
       // Ajusta o Seletor de Núcleo do Nintendo DS no topo
       const ndsWrap = document.getElementById('nds-core-selector-wrap');
