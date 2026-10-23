@@ -1,5 +1,15 @@
-const CACHE_NAME = 'pokemule-pwa-v1';
-const APP_SHELL = ['/', '/index.html', '/player.html', '/save-manager.js', '/manifest.json', '/icon.svg'];
+const CACHE_NAME = 'pokemule-pwa-v2';
+const APP_SHELL = [
+  '/',
+  '/index.html',
+  '/player.html',
+  '/save-manager.js',
+  '/pokemon-wiki.js',
+  '/trainer-card.js',
+  '/rom-patcher.js',
+  '/manifest.json',
+  '/icon.svg'
+];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

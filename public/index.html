@@ -1206,6 +1206,218 @@
         z-index: 260;
       }
     }
+
+    /* ==========================================================================
+       POKÉMULE 2.0: ESTANTE CONTINUAR JOGANDO & FAVORITOS
+       ========================================================================== */
+    .continue-shelf-container {
+      margin-bottom: 22px;
+      background: linear-gradient(180deg, rgba(37, 32, 59, 0.75) 0%, rgba(27, 23, 44, 0.45) 100%);
+      border: 1px solid var(--border-highlight);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 10px 24px rgba(10, 7, 20, 0.4);
+    }
+
+    .continue-shelf-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .continue-shelf-header h3 {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f8f6ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .continue-shelf-cards {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+    }
+
+    .continue-card {
+      flex: 0 0 190px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .continue-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--emerald);
+    }
+
+    .continue-card-cover {
+      height: 95px;
+      width: 100%;
+      position: relative;
+      background: var(--surface-soft);
+    }
+
+    .continue-card-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .continue-card-info {
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .continue-card-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff;
+    }
+
+    .continue-card-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Botão de Favorito Flutuante no Cartucho */
+    .card-fav-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 12, 25, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: #9ca3af;
+      transition: transform 0.15s ease, color 0.15s ease, background 0.15s ease;
+      z-index: 4;
+      backdrop-filter: blur(6px);
+      user-select: none;
+    }
+
+    .card-fav-btn:hover {
+      transform: scale(1.15);
+      color: #ffbe3b;
+      background: rgba(15, 12, 25, 0.95);
+    }
+
+    .card-fav-btn.is-fav {
+      color: #ffbe3b;
+      border-color: #ffbe3b;
+      background: rgba(255, 190, 59, 0.25);
+      text-shadow: 0 0 8px rgba(255, 190, 59, 0.7);
+    }
+
+    /* ==========================================================================
+       MODAIS: WIKI POKÉMON & TRAINER CARD
+       ========================================================================== */
+    .wiki-modal-box {
+      max-width: 900px;
+      width: 95%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .type-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .type-pill:hover {
+      transform: scale(1.05);
+    }
+
+    .weakness-card {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .weakness-card-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .evo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    .trainer-card-box {
+      max-width: 720px;
+      width: 95%;
+    }
+
+    #trainer-card-canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      border: 2px solid var(--border-highlight);
+    }
+
+    /* Seção do Patcher de ROMs */
+    .patcher-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -1257,7 +1469,11 @@
           📲 Instalar App
         </button>
 
-        <button class="btn btn-tactile" id="toggle-tools-btn" onclick="toggleQuickDrawer('tools-drawer', this)" title="Colar link direto ou abrir arquivo ROM do seu PC">
+        <button class="btn btn-tactile" onclick="openWikiModal()" title="Calculadora de Tipos, Fraquezas e Evoluções por Troca">
+          📖 Wiki
+        </button>
+
+        <button class="btn btn-tactile" id="toggle-tools-btn" onclick="toggleQuickDrawer('tools-drawer', this)" title="Colar link direto, abrir ROM local ou aplicar patch BPS/IPS">
           ➕ Link / ROM
         </button>
 
@@ -1272,21 +1488,49 @@
     </div>
   </header>
 
-  <!-- GAVETA OPCIONAL: COLAR LINK DIRETO OU ABRIR ROM LOCAL (Fica escondida até clicar em "+ Link / ROM") -->
+  <!-- GAVETA OPCIONAL: COLAR LINK DIRETO, ABRIR ROM LOCAL OU APLICAR PATCH (Fica escondida até clicar em "+ Link / ROM") -->
   <div class="QuickDrawer" id="tools-drawer">
-    <div class="drawer-inner quick-tools-row">
-      <div class="quick-url-form">
-        <input type="text" id="custom-url-input" placeholder="Cole um link do pokebat.net, hackdex.app ou MediaFire..." />
-        <button class="btn" id="custom-url-btn">▶ Extrair & Jogar</button>
+    <div class="drawer-inner" style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="quick-tools-row">
+        <div class="quick-url-form">
+          <input type="text" id="custom-url-input" placeholder="Cole um link do pokebat.net, hackdex.app ou MediaFire..." />
+          <button class="btn" id="custom-url-btn">▶ Extrair & Jogar</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label class="btn btn-tactile" style="cursor: pointer;">
+            📂 Abrir ROM do PC (.gba, .nds, .gbc, .zip)
+            <input type="file" id="local-rom-input" accept=".gba,.nds,.zip,.7z,.rar,.gbc,.gb" style="display: none;" />
+          </label>
+          <button class="btn btn-tactile" id="clear-cache-btn" onclick="clearRomMemoryCache()" title="Libera a memória RAM do navegador apagando as ROMs já jogadas do cache temporário">
+            🧹 Limpar RAM
+          </button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <label class="btn btn-tactile" style="cursor: pointer;">
-          📂 Escolher ROM do PC (.gba, .nds, .gbc, .zip)
-          <input type="file" id="local-rom-input" accept=".gba,.nds,.zip,.7z,.rar,.gbc,.gb" style="display: none;" />
-        </label>
-        <button class="btn btn-tactile" id="clear-cache-btn" onclick="clearRomMemoryCache()" title="Libera a memória RAM do navegador apagando as ROMs já jogadas do cache temporário">
-          🧹 Limpar Cache de ROMs (RAM)
-        </button>
+
+      <!-- Patcher de ROMs Local (.bps / .ips) 100% no navegador -->
+      <div class="patcher-box">
+        <div style="font-size: 0.85rem; font-weight: 800; color: var(--sky); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+          <span>🛠️ Aplicar Patch de Romhack no Navegador (.bps / .ips)</span>
+          <span style="font-size: 0.72rem; color: var(--emerald); font-weight: 700;">🔒 100% Seguro • Nada é enviado para a internet</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+          <label class="btn btn-tactile" style="cursor: pointer; font-size: 0.78rem;">
+            1. Base ROM (.gba, .nds, .gbc)
+            <input type="file" id="patch-base-rom" accept=".gba,.nds,.gbc,.gb" style="display: none;" onchange="handlePatcherFileSelect()" />
+          </label>
+          <span id="patch-base-label" style="font-size: 0.76rem; color: var(--text-muted); max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nenhuma ROM</span>
+
+          <label class="btn btn-tactile" style="cursor: pointer; font-size: 0.78rem;">
+            2. Patch (.bps / .ips)
+            <input type="file" id="patch-file" accept=".bps,.ips" style="display: none;" onchange="handlePatcherFileSelect()" />
+          </label>
+          <span id="patch-file-label" style="font-size: 0.76rem; color: var(--text-muted); max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nenhum patch</span>
+
+          <button class="btn btn-emerald" id="patch-execute-btn" onclick="runClientRomPatch()" style="font-size: 0.78rem;" disabled>
+            ⚡ Aplicar Patch
+          </button>
+        </div>
+        <div id="patcher-status-area" style="display: none; padding: 10px 12px; background: var(--surface-soft); border-radius: 8px; font-size: 0.8rem;"></div>
       </div>
     </div>
   </div>
@@ -1314,9 +1558,19 @@
 
   <!-- ÁREA PRINCIPAL: FILTROS EM 1 LINHA + JOGOS IMEDIATAMENTE VISÍVEIS -->
   <main>
+    <!-- ESTANTE DINÂMICA: CONTINUAR JOGANDO (Saves mais recentes do jogador) -->
+    <div id="continue-playing-shelf" class="continue-shelf-container" style="display: none;">
+      <div class="continue-shelf-header">
+        <h3>▶️ Continuar Jogando <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(Seus saves mais recentes)</span></h3>
+        <button class="btn btn-tactile" style="padding:4px 10px; font-size:0.76rem;" onclick="openSavesVaultModal()">Ver Todos ➡</button>
+      </div>
+      <div class="continue-shelf-cards" id="continue-shelf-list"></div>
+    </div>
+
     <div class="toolbar-row">
       <div class="filter-tabs" id="cat-tabs">
         <button class="filter-chip active" data-cat="all">Todos</button>
+        <button class="filter-chip" data-cat="favorites" id="fav-chip">⭐ Favoritos (<span id="fav-count">0</span>)</button>
         <button class="filter-chip" data-cat="gba">GBA</button>
         <button class="filter-chip" data-cat="ptbr">Traduzidos PT-BR</button>
         <button class="filter-chip" data-cat="nds">Nintendo DS</button>
@@ -1426,6 +1680,22 @@
         <button class="btn btn-drive" id="toggle-cheats-btn">
           🧬 Cheats
         </button>
+
+        <div id="nds-core-selector-wrap" style="display:none; align-items:center; gap:5px; background:var(--surface-soft); padding:2px 8px; border-radius:999px; border:1px solid var(--border);" title="Escolha o núcleo do Nintendo DS">
+          <span style="font-size:0.74rem; font-weight:800; color:var(--text-muted);">NDS:</span>
+          <select id="nds-core-select" class="btn btn-tactile" onchange="changeNdsCore(this.value)" style="padding:3px 6px; font-size:0.78rem; background:transparent; border:none; cursor:pointer; color:var(--emerald); font-weight:800; outline:none;">
+            <option value="desmume2015">DeSmuME 2015 (Rápido / Sem Lag)</option>
+            <option value="melonds">MelonDS (Alta Precisão)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-tactile" onclick="sendPlayerAction('UNLOCK_AUDIO')" title="Ativar áudio no Safari / iPhone">
+          🔊 Som
+        </button>
+
+        <button class="btn btn-tactile" onclick="openWikiModal()" title="Calculadora de Tipos e Fraquezas">
+          📖 Wiki
+        </button>
       </div>
     </div>
 
@@ -1445,6 +1715,90 @@
     </div>
   </div>
 
+  <!-- MODAL: WIKI POKÉMON (CALCULADORA DE TIPOS & EVOLUÇÕES POR TROCA) -->
+  <div class="modal-backdrop" id="wiki-modal">
+    <div class="modal-box wiki-modal-box">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:8px;">📖 Wiki Pokémon & Calculadora de Tipos</h3>
+        <button class="btn btn-tactile" onclick="closeWikiModal()">✕ Fechar</button>
+      </div>
+      <div class="modal-content" style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <button class="btn btn-tactile active-wiki-tab" id="wiki-tab-types-btn" onclick="switchWikiTab('types')">⚡ Calculadora de Fraquezas (Tipos)</button>
+          <button class="btn btn-tactile" id="wiki-tab-evos-btn" onclick="switchWikiTab('evos')">🔄 Evoluções por Troca (Romhacks)</button>
+        </div>
+
+        <!-- Seção 1: Calculadora de Tipos -->
+        <div id="wiki-types-section">
+          <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:14px;">
+            <div style="font-size:0.85rem; font-weight:800; color:var(--sky); margin-bottom:10px;">
+              Selecione os Tipos do Pokémon (Tipo 1 e opcional Tipo 2):
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:center;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:0.8rem; font-weight:700;">Tipo 1:</span>
+                <select id="wiki-type1-select" class="btn btn-tactile" onchange="updateWikiMatchups()" style="outline:none; font-weight:800;"></select>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:0.8rem; font-weight:700;">Tipo 2:</span>
+                <select id="wiki-type2-select" class="btn btn-tactile" onchange="updateWikiMatchups()" style="outline:none; font-weight:800;"></select>
+              </div>
+              <div id="wiki-selected-types-pills" style="display:flex; gap:6px; align-items:center;"></div>
+            </div>
+          </div>
+          <div id="wiki-matchups-results" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px;"></div>
+        </div>
+
+        <!-- Seção 2: Evoluções por Troca -->
+        <div id="wiki-evos-section" style="display:none; flex-direction:column; gap:10px;">
+          <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.45; background:var(--bg-elevated); padding:10px 14px; border-radius:10px; border:1px solid var(--border);">
+            💡 <b>Como evoluir no PokeMule & Romhacks:</b> Na maioria dos hacks do PokeBat e HackDex, Pokémon que evoluíam por troca agora evoluem usando o item <b>Link Stone (Cabo de Ligação)</b> ou simplesmente ao subir para um nível específico (ex: 37).
+          </div>
+          <div id="wiki-evos-list" style="display:flex; flex-direction:column; gap:8px; max-height:450px; overflow-y:auto; padding-right:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CARTÃO DE TREINADOR GBA -->
+  <div class="modal-backdrop" id="trainer-card-modal">
+    <div class="modal-box trainer-card-box">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:8px;">🎴 Cartão de Treinador GBA</h3>
+        <button class="btn btn-tactile" onclick="closeTrainerCardModal()">✕ Fechar</button>
+      </div>
+      <div class="modal-content" style="display:flex; flex-direction:column; gap:16px; align-items:center;">
+        <canvas id="trainer-card-canvas"></canvas>
+
+        <div style="width:100%; display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; background:var(--bg-elevated); padding:12px 14px; border-radius:12px; border:1px solid var(--border);">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <label style="font-size:0.78rem; font-weight:700;">Nome:
+              <input type="text" id="tc-name-input" value="RED" maxlength="10" style="padding:4px 8px; border-radius:6px; background:var(--surface); border:1px solid var(--border); color:#fff; width:100px; font-weight:800;" oninput="refreshTrainerCard()" />
+            </label>
+            <label style="font-size:0.78rem; font-weight:700;">Tema:
+              <select id="tc-theme-select" class="btn btn-tactile" onchange="refreshTrainerCard()" style="padding:4px 8px; font-size:0.78rem;">
+                <option value="emerald">Emerald (Verde)</option>
+                <option value="firered">FireRed (Laranja)</option>
+                <option value="ruby">Ruby (Vermelho)</option>
+                <option value="sapphire">Sapphire (Azul)</option>
+                <option value="indigo">Indigo (Roxo)</option>
+              </select>
+            </label>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-emerald" onclick="downloadCurrentTrainerCard()">
+              💾 Baixar Cartão (.PNG)
+            </button>
+          </div>
+        </div>
+        <div id="tc-party-preview" style="font-size:0.78rem; color:var(--text-muted); text-align:center;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/pokemon-wiki.js"></script>
+  <script src="/trainer-card.js"></script>
+  <script src="/rom-patcher.js"></script>
   <script src="/save-manager.js"></script>
   <script>
     // Cache em memória da sessão do navegador: mantém a ROM aberta só enquanto não fechar a aba!
@@ -1693,10 +2047,367 @@
       }
     }
 
+    // ==========================================================================
+    // POKÉMULE 2.0: FAVORITOS
+    // ==========================================================================
+    function getFavorites() {
+      try {
+        return new Set(JSON.parse(localStorage.getItem('pokemule_favorites') || '[]'));
+      } catch (_) {
+        return new Set();
+      }
+    }
+
+    function saveFavorites(favSet) {
+      localStorage.setItem('pokemule_favorites', JSON.stringify([...favSet]));
+      updateFavoritesBadge();
+    }
+
+    function updateFavoritesBadge() {
+      const favs = getFavorites();
+      const countEl = document.getElementById('fav-count');
+      if (countEl) countEl.textContent = favs.size;
+    }
+
+    function toggleFavorite(id, e) {
+      if (e) e.stopPropagation();
+      const favs = getFavorites();
+      if (favs.has(id)) {
+        favs.delete(id);
+      } else {
+        favs.add(id);
+      }
+      saveFavorites(favs);
+      if (currentCategory === 'favorites') {
+        loadGames();
+      } else {
+        document.querySelectorAll(`.card-fav-btn[data-id="${id}"]`).forEach(btn => {
+          const isFav = favs.has(id);
+          btn.classList.toggle('is-fav', isFav);
+          btn.textContent = isFav ? '⭐' : '☆';
+          btn.title = isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
+        });
+      }
+    }
+
+    // ==========================================================================
+    // POKÉMULE 2.0: ESTANTE CONTINUAR JOGANDO
+    // ==========================================================================
+    function renderContinuePlayingShelf(saves) {
+      const shelf = document.getElementById('continue-playing-shelf');
+      const listEl = document.getElementById('continue-shelf-list');
+      if (!shelf || !listEl) return;
+
+      const activeSaves = (saves || []).filter(s => s.hasSrm || s.hasState);
+      if (activeSaves.length === 0) {
+        shelf.style.display = 'none';
+        return;
+      }
+
+      shelf.style.display = 'block';
+      listEl.innerHTML = activeSaves.slice(0, 10).map(s => {
+        const dateStr = new Date(s.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        const cover = s.cover || 'https://pokebat.net/wp-content/uploads/2023/01/default.png';
+        return `
+          <div class="continue-card" onclick="startGame('${s.id}', '${encodeURIComponent(s.title)}', '${encodeURIComponent(s.downloadPageUrl || '')}', '${s.console}', '${encodeURIComponent(s.cover || '')}', 'srm')">
+            <div class="continue-card-cover">
+              <img src="${cover}" alt="${s.title}" loading="lazy" onerror="this.src='https://pokebat.net/wp-content/uploads/2023/01/default.png'" />
+              <div class="badges" style="top:6px; left:6px;">
+                <span class="badge ${getConsoleBadgeClass(s.console)}">${s.console}</span>
+              </div>
+            </div>
+            <div class="continue-card-info">
+              <div class="continue-card-title">${s.title}</div>
+              <div class="continue-card-meta">
+                <span>🕒 ${dateStr}</span>
+                <span style="color:var(--emerald); font-weight:800;">▶ Continuar</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================================================
+    // POKÉMULE 2.0: WIKI POKÉMON & CALCULADORA DE TIPOS
+    // ==========================================================================
+    const wikiModal = document.getElementById('wiki-modal');
+    let wikiInitialized = false;
+
+    function openWikiModal() {
+      if (wikiModal) wikiModal.classList.add('open');
+      if (!wikiInitialized) {
+        initWikiContent();
+        wikiInitialized = true;
+      }
+    }
+
+    function closeWikiModal() {
+      if (wikiModal) wikiModal.classList.remove('open');
+    }
+
+    wikiModal?.addEventListener('click', (e) => {
+      if (e.target === wikiModal) closeWikiModal();
+    });
+
+    function switchWikiTab(tab) {
+      const typesSection = document.getElementById('wiki-types-section');
+      const evosSection = document.getElementById('wiki-evos-section');
+      const typesBtn = document.getElementById('wiki-tab-types-btn');
+      const evosBtn = document.getElementById('wiki-tab-evos-btn');
+
+      if (tab === 'types') {
+        if (typesSection) typesSection.style.display = 'block';
+        if (evosSection) evosSection.style.display = 'none';
+        typesBtn?.classList.add('active-wiki-tab');
+        evosBtn?.classList.remove('active-wiki-tab');
+      } else {
+        if (typesSection) typesSection.style.display = 'none';
+        if (evosSection) evosSection.style.display = 'flex';
+        evosBtn?.classList.add('active-wiki-tab');
+        typesBtn?.classList.remove('active-wiki-tab');
+      }
+    }
+
+    function initWikiContent() {
+      if (typeof PokemonWiki === 'undefined') return;
+      const type1Sel = document.getElementById('wiki-type1-select');
+      const type2Sel = document.getElementById('wiki-type2-select');
+      if (!type1Sel || !type2Sel) return;
+
+      type1Sel.innerHTML = PokemonWiki.ALL_TYPES.map(t => `<option value="${t}">${PokemonWiki.TYPE_NAMES_PT[t]}</option>`).join('');
+      type2Sel.innerHTML = `<option value="">(Nenhum)</option>` + PokemonWiki.ALL_TYPES.map(t => `<option value="${t}">${PokemonWiki.TYPE_NAMES_PT[t]}</option>`).join('');
+
+      type1Sel.value = 'fire';
+      type2Sel.value = 'flying'; // Charizard clássico
+      updateWikiMatchups();
+      renderWikiEvos();
+    }
+
+    function updateWikiMatchups() {
+      if (typeof PokemonWiki === 'undefined') return;
+      const t1 = document.getElementById('wiki-type1-select')?.value || 'normal';
+      const t2 = document.getElementById('wiki-type2-select')?.value || null;
+      const resultsEl = document.getElementById('wiki-matchups-results');
+      const pillsEl = document.getElementById('wiki-selected-types-pills');
+
+      if (pillsEl) {
+        pillsEl.innerHTML = `
+          <span class="type-pill" style="background:${PokemonWiki.TYPE_COLORS[t1]}">${PokemonWiki.TYPE_NAMES_PT[t1]}</span>
+          ${t2 ? `<span class="type-pill" style="background:${PokemonWiki.TYPE_COLORS[t2]}">${PokemonWiki.TYPE_NAMES_PT[t2]}</span>` : ''}
+        `;
+      }
+
+      const res = PokemonWiki.computeDefenses(t1, t2);
+
+      function renderTypeGroup(title, list, color, badgeText) {
+        if (!list || list.length === 0) return '';
+        return `
+          <div class="weakness-card">
+            <div class="weakness-card-title" style="color:${color};">
+              <span>${title}</span>
+              <span class="badge" style="background:${color}; color:#fff; font-size:0.68rem;">${badgeText}</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              ${list.map(t => `
+                <span class="type-pill" style="background:${PokemonWiki.TYPE_COLORS[t]}">${PokemonWiki.TYPE_NAMES_PT[t]}</span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (resultsEl) {
+        resultsEl.innerHTML = `
+          ${renderTypeGroup('🔴 Fraqueza Extrema (4x Dano)', res.weaknesses4x, '#ef4444', '4x Dano')}
+          ${renderTypeGroup('🟠 Fraqueza (2x Dano)', res.weaknesses2x, '#f97316', '2x Dano')}
+          ${renderTypeGroup('🟢 Resistente (0.5x Dano)', res.resistances05x, '#10b981', '0.5x Dano')}
+          ${renderTypeGroup('🔵 Super Resistente (0.25x Dano)', res.resistances025x, '#3b82f6', '0.25x Dano')}
+          ${renderTypeGroup('⛔ Imunidade Total (0x Dano)', res.immunities0x, '#8b5cf6', '0x Dano')}
+          ${renderTypeGroup('⚪ Dano Normal (1x Dano)', res.neutral1x, '#9ca3af', '1x Dano')}
+        `;
+      }
+    }
+
+    function renderWikiEvos() {
+      if (typeof PokemonWiki === 'undefined') return;
+      const listEl = document.getElementById('wiki-evos-list');
+      if (!listEl) return;
+
+      listEl.innerHTML = PokemonWiki.TRADE_EVOLUTIONS.map(e => `
+        <div class="evo-item">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${e.fromId}.png" style="width:38px; height:38px;" loading="lazy" />
+            <div style="font-weight:800; font-size:0.86rem; color:var(--text);">${e.from}</div>
+            <div style="color:var(--sky); font-weight:900;">➡</div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${e.toId}.png" style="width:38px; height:38px;" loading="lazy" />
+            <div style="font-weight:800; font-size:0.86rem; color:var(--emerald);">${e.to}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.8rem; font-weight:800; color:var(--amber);">⚡ ${e.methodRomhack}</div>
+            <div style="font-size:0.7rem; color:var(--text-muted);">Oficial: ${e.methodOriginal}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==========================================================================
+    // POKÉMULE 2.0: CARTÃO DE TREINADOR GBA
+    // ==========================================================================
+    const trainerCardModal = document.getElementById('trainer-card-modal');
+    let currentTcGameRecord = null;
+    let currentTcTeam = [];
+
+    async function openTrainerCardForGame(gameId) {
+      const record = await window.userSaveManager.getRecord(gameId);
+      if (!record) return;
+      currentTcGameRecord = record;
+      currentTcTeam = [];
+
+      if (record.srmBytes && typeof TrainerCardGenerator !== 'undefined') {
+        try {
+          currentTcTeam = TrainerCardGenerator.inspectSrmParty(new Uint8Array(record.srmBytes));
+        } catch (_) {}
+      }
+
+      const nameInput = document.getElementById('tc-name-input');
+      if (nameInput) {
+        nameInput.value = (window.userSaveManager.userProfile?.given_name || 'ASH').slice(0, 10);
+      }
+
+      if (trainerCardModal) trainerCardModal.classList.add('open');
+      refreshTrainerCard();
+    }
+
+    function closeTrainerCardModal() {
+      if (trainerCardModal) trainerCardModal.classList.remove('open');
+    }
+
+    trainerCardModal?.addEventListener('click', (e) => {
+      if (e.target === trainerCardModal) closeTrainerCardModal();
+    });
+
+    async function refreshTrainerCard() {
+      if (typeof TrainerCardGenerator === 'undefined') return;
+      const canvas = document.getElementById('trainer-card-canvas');
+      const name = document.getElementById('tc-name-input')?.value || 'RED';
+      const theme = document.getElementById('tc-theme-select')?.value || 'emerald';
+      const preview = document.getElementById('tc-party-preview');
+
+      if (preview) {
+        if (currentTcTeam && currentTcTeam.length > 0) {
+          preview.innerHTML = `🔍 <b>Time Detectado no Save:</b> ${currentTcTeam.map(m => `${m.name} (Lv. ${m.level})`).join(', ')}`;
+        } else {
+          preview.innerHTML = `🎮 <b>Time Exibido:</b> Equipe Campeã Clássica de Kanto/Hoenn`;
+        }
+      }
+
+      await TrainerCardGenerator.renderTrainerCardToCanvas({
+        canvas,
+        trainerName: name,
+        trainerId: currentTcGameRecord ? String(Math.abs(currentTcGameRecord.id.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 65535).padStart(5, '0') : '04215',
+        money: '$999,999',
+        pokedex: '151',
+        time: '38:45',
+        theme,
+        team: currentTcTeam
+      });
+    }
+
+    function downloadCurrentTrainerCard() {
+      const canvas = document.getElementById('trainer-card-canvas');
+      const name = document.getElementById('tc-name-input')?.value || 'treinador';
+      if (typeof TrainerCardGenerator !== 'undefined') {
+        TrainerCardGenerator.downloadCanvasAsPng(canvas, `pokemule_cartao_${name.toLowerCase()}.png`);
+      }
+    }
+
+    // ==========================================================================
+    // POKÉMULE 2.0: PATCHER DE ROM NO NAVEGADOR (.BPS / .IPS)
+    // ==========================================================================
+    let selectedBaseRomFile = null;
+    let selectedPatchFile = null;
+
+    function handlePatcherFileSelect() {
+      const baseInput = document.getElementById('patch-base-rom');
+      const patchInput = document.getElementById('patch-file');
+      const baseLabel = document.getElementById('patch-base-label');
+      const patchLabel = document.getElementById('patch-file-label');
+      const execBtn = document.getElementById('patch-execute-btn');
+
+      if (baseInput?.files[0]) {
+        selectedBaseRomFile = baseInput.files[0];
+        if (baseLabel) baseLabel.textContent = selectedBaseRomFile.name;
+      }
+      if (patchInput?.files[0]) {
+        selectedPatchFile = patchInput.files[0];
+        if (patchLabel) patchLabel.textContent = selectedPatchFile.name;
+      }
+
+      if (execBtn) {
+        execBtn.disabled = !(selectedBaseRomFile && selectedPatchFile);
+      }
+    }
+
+    async function runClientRomPatch() {
+      if (!selectedBaseRomFile || !selectedPatchFile) return;
+      const statusArea = document.getElementById('patcher-status-area');
+      const execBtn = document.getElementById('patch-execute-btn');
+
+      if (statusArea) {
+        statusArea.style.display = 'block';
+        statusArea.innerHTML = '⏳ Aplicando patch na memória do navegador...';
+      }
+      if (execBtn) execBtn.disabled = true;
+
+      try {
+        if (typeof RomPatcher === 'undefined') throw new Error('Módulo RomPatcher não carregado.');
+        const result = await RomPatcher.patchRom(selectedBaseRomFile, selectedPatchFile);
+
+        const blobUrl = URL.createObjectURL(result.blob);
+        const sys = /\.nds$/i.test(result.name) ? 'NDS' : /\.gbc?$/i.test(result.name) ? 'GBC' : 'GBA';
+        const cleanId = 'patched-' + result.name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32);
+
+        if (statusArea) {
+          statusArea.innerHTML = `
+            <div style="color:var(--emerald); font-weight:800; margin-bottom:6px;">
+              ✅ Patch aplicado com sucesso! (${result.sizeMB} MB)
+            </div>
+            <div style="font-size:0.76rem; color:var(--text); margin-bottom:8px;">
+              ${result.name}
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-play" style="padding:6px 14px; font-size:0.78rem;" onclick="startGame('${cleanId}', '${encodeURIComponent(result.name)}', '', '${sys}', '', '', '', 0, '${encodeURIComponent(blobUrl)}')">
+                ▶ Jogar Agora no PokeMule
+              </button>
+              <a class="btn btn-tactile" style="padding:6px 12px; font-size:0.78rem; text-decoration:none;" href="${blobUrl}" download="${result.name}">
+                📥 Baixar ROM Patchada
+              </a>
+            </div>
+          `;
+        }
+      } catch (err) {
+        if (statusArea) {
+          statusArea.innerHTML = `<span style="color:var(--primary);">Erro ao aplicar patch: ${err.message}</span>`;
+        }
+      } finally {
+        if (execBtn) execBtn.disabled = false;
+      }
+    }
+
+    // ==========================================================================
+    // POKÉMULE 2.0: CONTROLE DE NÚCLEO NDS (DESMUME 2015 vs MELONDS)
+    // ==========================================================================
+    function changeNdsCore(newCore) {
+      localStorage.setItem('pokemule_nds_core', newCore);
+      sendPlayerAction('SWITCH_NDS_CORE', { core: newCore });
+    }
+
     // Carrega o Cofre de Saves no Modal Flutuante
     async function loadSavesVault(autoPull = true) {
       try {
         updateGoogleDriveButtons();
+        updateFavoritesBadge();
         let saves = await window.userSaveManager.listAllSaves();
 
         // Se o usuário estiver logado no Google Drive mas o navegador estiver sem saves (ex: limpou cookies/trocou de aparelho),
@@ -1712,6 +2423,9 @@
 
         userSavedGameIds = new Set(saves.map(s => s.id));
         if (savesCountBadge) savesCountBadge.textContent = saves.length;
+
+        // Atualiza a Estante "Continuar Jogando" no topo
+        renderContinuePlayingShelf(saves);
 
         if (currentVaultGameId) {
           openGameSaveDetails(currentVaultGameId);
@@ -1884,6 +2598,9 @@
                 <button class="btn btn-tactile" style="padding:6px 12px; font-size:0.8rem;" onclick="downloadUserSave('${record.id}', 'srm')">
                   📥 Baixar .SRM
                 </button>
+                <button class="btn btn-drive" style="padding:6px 12px; font-size:0.8rem;" onclick="openTrainerCardForGame('${record.id}')" title="Inspeciona os Pokémon do save e gera um Cartão de Treinador GBA">
+                  🎴 Cartão Treinador GBA
+                </button>
                 <button class="btn btn-tactile" style="padding:6px 12px; font-size:0.8rem; color:var(--primary);" onclick="confirmDeleteSrm('${record.id}')">
                   🗑️ Deletar Save (.SRM)
                 </button>
@@ -1927,13 +2644,19 @@
         const url = `/api/games?source=${currentSource}&q=${encodeURIComponent(query)}&cat=${currentCategory}&lang=${currentLang}&page=${currentPage}`;
         const res = await fetch(url);
         const data = await res.json();
-        const games = data.games || [];
+        let games = data.games || [];
+
+        if (currentCategory === 'favorites') {
+          const favs = getFavorites();
+          games = games.filter(g => favs.has(g.id));
+        }
+
         currentCatalogGames = games;
         totalPages = data.totalPages || 1;
 
         countLabel.textContent = `${games.length} jogos • Pág ${currentPage}/${totalPages}`;
 
-        if (totalPages > 1) {
+        if (totalPages > 1 && currentCategory !== 'favorites') {
           paginationBar.style.display = 'flex';
           pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
           prevPageBtn.disabled = currentPage <= 1;
@@ -1943,7 +2666,9 @@
         }
 
         if (games.length === 0) {
-          gamesContainer.innerHTML = '<div class="loading-state">Nenhum jogo encontrado para este filtro.</div>';
+          gamesContainer.innerHTML = currentCategory === 'favorites'
+            ? '<div class="loading-state">Nenhum cartucho favoritado ainda.<br><small style="font-size:0.8rem; color:var(--text-muted); margin-top:6px; display:inline-block;">Clique na estrelinha ☆ nos cartuchos para adicionar aos seus favoritos!</small></div>'
+            : '<div class="loading-state">Nenhum jogo encontrado para este filtro.</div>';
           return;
         }
 
@@ -1951,12 +2676,16 @@
           const sys = game.console || 'GBA';
           const isPt = game.language === 'PT-BR';
           const hasSave = userSavedGameIds.has(game.id);
+          const isFav = getFavorites().has(game.id);
           const romStreamKey = `/api/rom?id=${encodeURIComponent(game.id)}&url=${encodeURIComponent(game.downloadPageUrl)}`;
           const inBrowserSession = window.sessionRomBlobs.has(romStreamKey);
           const originName = game.source === 'hackdex' ? 'HackDex.app' : 'PokeBat.net';
           return `
             <div class="game-card">
               <div class="card-cover" onclick="openGameDetails(${idx})" title="Ver screenshots, informações e mirrors">
+                <button class="card-fav-btn ${isFav ? 'is-fav' : ''}" data-id="${game.id}" onclick="toggleFavorite('${game.id}', event)" title="${isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}">
+                  ${isFav ? '⭐' : '☆'}
+                </button>
                 <img src="${game.cover}" alt="${game.title}" loading="lazy" onerror="this.src='https://pokebat.net/wp-content/uploads/2023/01/default.png'" />
                 <div class="badges">
                   <span class="badge ${getConsoleBadgeClass(sys)}">${sys}</span>
@@ -2220,11 +2949,12 @@
       } catch (_) {}
     }
 
-    function startGame(id, encodedTitle, encodedDownloadUrl, consoleType = 'GBA', encodedCover = '', autoLoadType = '', encodedEntry = '', autoLoadSlot = 0) {
+    function startGame(id, encodedTitle, encodedDownloadUrl, consoleType = 'GBA', encodedCover = '', autoLoadType = '', encodedEntry = '', autoLoadSlot = 0, directBlob = '') {
       const title = decodeURIComponent(encodedTitle);
-      const downloadUrl = decodeURIComponent(encodedDownloadUrl);
+      const downloadUrl = encodedDownloadUrl ? decodeURIComponent(encodedDownloadUrl) : '';
       const cover = encodedCover ? decodeURIComponent(encodedCover) : '';
       const entry = encodedEntry ? decodeURIComponent(encodedEntry) : '';
+      const directBlobUrl = directBlob ? decodeURIComponent(directBlob) : '';
 
       // VINCULAÇÃO COM A VERSÃO DO JOGO:
       // Se for um arquivo específico de um pacote Multi-ROM (entry), isola o ID e o Título
@@ -2240,6 +2970,18 @@
       playerView.classList.add('active');
       resetEmulatorSpeed();
 
+      // Ajusta o Seletor de Núcleo do Nintendo DS no topo
+      const ndsWrap = document.getElementById('nds-core-selector-wrap');
+      const ndsSelect = document.getElementById('nds-core-select');
+      const preferredNdsCore = localStorage.getItem('pokemule_nds_core') || 'desmume2015';
+
+      if (consoleType === 'NDS') {
+        if (ndsWrap) ndsWrap.style.display = 'inline-flex';
+        if (ndsSelect) ndsSelect.value = preferredNdsCore;
+      } else {
+        if (ndsWrap) ndsWrap.style.display = 'none';
+      }
+
       // No celular, já abre automaticamente em Tela Cheia Real (100% da tela) ao tocar em Jogar!
       if (window.innerWidth <= 820) {
         enterImmersiveFullscreen();
@@ -2247,20 +2989,26 @@
 
       loadCheatsForGame(title, consoleType);
 
-      let romStreamUrl = `/api/rom?id=${encodeURIComponent(id)}&url=${encodeURIComponent(downloadUrl)}`;
-      if (entry) romStreamUrl += `&entry=${encodeURIComponent(entry)}`;
+      let romStreamUrl = downloadUrl ? `/api/rom?id=${encodeURIComponent(id)}&url=${encodeURIComponent(downloadUrl)}` : '';
+      if (entry && romStreamUrl) romStreamUrl += `&entry=${encodeURIComponent(entry)}`;
 
       const playerParams = new URLSearchParams({
         id: effectiveId,
-        rom: romStreamUrl,
         title: displayTitle,
         console: consoleType,
         url: downloadUrl,
         cover,
         autoload: autoLoadType,
         slot: String(autoLoadSlot || 0),
-        entry
+        entry,
+        ndscore: preferredNdsCore
       });
+
+      if (directBlobUrl) {
+        playerParams.set('blob', directBlobUrl);
+      } else if (romStreamUrl) {
+        playerParams.set('rom', romStreamUrl);
+      }
 
       emulatorIframe.src = `/player.html?${playerParams.toString()}`;
     }
