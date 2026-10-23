@@ -173,9 +173,11 @@
     }
 
     function resolveCore(sys, filename = '') {
-      if (/\.nds$/i.test(filename) || sys === 'NDS') return 'melonds';
-      if (/\.gbc?$/i.test(filename) || sys === 'GBC' || sys === 'GB') return 'gambatte';
-      return 'mgba';
+      const f = (filename || '').toLowerCase();
+      const s = (sys || '').toUpperCase();
+      if (f.endsWith('.nds') || s === 'NDS') return 'nds';
+      if (f.endsWith('.gbc') || f.endsWith('.gb') || s === 'GBC' || s === 'GB') return 'gb';
+      return 'gba';
     }
 
     function computeBufferHash(uint8) {
@@ -354,6 +356,25 @@
           }
         } catch (_) {}
       }
+
+      if (data.action === 'SET_SPEED') {
+        const mult = parseFloat(data.speed) || 1.0;
+        try {
+          if (gm) {
+            if (mult <= 1.0) {
+              if (gm.toggleFastForward) gm.toggleFastForward(0);
+              if (gm.setFastForwardRatio) gm.setFastForwardRatio(1.0);
+              showToast('⚡ Velocidade: 1x (Normal)');
+            } else {
+              if (gm.setFastForwardRatio) gm.setFastForwardRatio(mult);
+              if (gm.toggleFastForward) gm.toggleFastForward(1);
+              showToast(`⚡ Velocidade: ${mult}x`);
+            }
+          }
+        } catch (err) {
+          console.warn('[Speed Change Error]', err);
+        }
+      }
     });
 
     /**
@@ -435,23 +456,64 @@
     function launchEmulatorWithUrl(finalBlobUrl, detectedName = '') {
       statusOverlay.style.display = 'none';
 
-      const chosenCore = resolveCore(consoleParam, detectedName || gameTitle);
+      let cleanName = detectedName || gameTitle;
+      const sysUpper = (consoleParam || 'GBA').toUpperCase();
+      let ext = '.gba';
+      if (sysUpper === 'NDS' || /\.nds$/i.test(cleanName)) ext = '.nds';
+      else if (sysUpper === 'GBC' || /\.gbc$/i.test(cleanName)) ext = '.gbc';
+      else if (sysUpper === 'GB' || /\.gb$/i.test(cleanName)) ext = '.gb';
+
+      if (!cleanName.toLowerCase().endsWith(ext)) {
+        cleanName += ext;
+      }
+
+      const chosenCore = resolveCore(sysUpper, cleanName);
       window.EJS_player = '#game';
       window.EJS_core = chosenCore;
-      window.EJS_gameName = detectedName || gameTitle;
+      window.EJS_gameName = cleanName;
       window.EJS_color = '#ff5460';
       window.EJS_startOnLoaded = true;
-      // CRÍTICO PARA MOBILE (iOS Safari / Android Chrome): desativa SharedArrayBuffer/pthreads
-      // para evitar travamentos e tela preta em celulares!
+
       window.EJS_threads = false;
       window.EJS_volume = 1.0;
       window.EJS_mute = false;
+
+      // Opções do RetroArch para sincronizar áudio e travar velocidade inicial em 1x (60 FPS)
+      window.EJS_retroarchOpts = [
+        { name: 'audio_latency', default: chosenCore === 'nds' ? '160' : '128', isString: false },
+        { name: 'audio_sync', default: 'true', isString: false },
+        { name: 'video_vsync', default: 'true', isString: false },
+        { name: 'video_refresh_rate', default: '60.0', isString: false },
+        { name: 'fastforward_ratio', default: '1.0', isString: false }
+      ];
+
+      // Otimizações de alta performance para Nintendo DS (MelonDS)
+      if (chosenCore === 'nds') {
+        window.EJS_defaultOptions = {
+          melonds_jit_enable: 'true',
+          melonds_threaded_renderer: 'true',
+          melonds_audio_interpolation: 'none',
+          melonds_frameskip: 'auto',
+          melonds_screen_layout: 'top-bottom'
+        };
+      }
+
       window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
       window.EJS_gameUrl = finalBlobUrl;
 
       // Se houver um .srm já salvo, restaura automaticamente ao iniciar
       window.EJS_onGameStart = function () {
         unlockMobileAudio();
+
+        // Garante que o jogo comece sempre na velocidade normal 1.0x (sem aceleração inicial indesejada)
+        try {
+          const gm = window.EJS_emulator?.gameManager;
+          if (gm) {
+            if (gm.toggleFastForward) gm.toggleFastForward(0);
+            if (gm.setFastForwardRatio) gm.setFastForwardRatio(1.0);
+          }
+        } catch (_) {}
+
         setTimeout(() => {
           restoreLocalSavesIfAvailable();
           startAutoSaveWatcher();

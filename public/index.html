@@ -876,6 +876,34 @@
       flex-wrap: wrap;
     }
 
+    .speed-control-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .speed-control-pill input[type="range"] {
+      width: 65px;
+      height: 5px;
+      accent-color: var(--sky);
+      cursor: pointer;
+    }
+    .speed-chip {
+      padding: 2px 6px !important;
+      font-size: 0.72rem !important;
+      border-radius: 999px !important;
+      min-width: 24px;
+      line-height: 1.2;
+    }
+    .speed-chip.active {
+      background: var(--sky) !important;
+      color: #fff !important;
+      border-color: var(--sky) !important;
+    }
+
     .player-body {
       flex: 1;
       display: flex;
@@ -1168,6 +1196,9 @@
         padding: 5px 9px;
         font-size: 0.72rem;
       }
+      .player-toolbar .speed-control-pill {
+        flex-shrink: 0;
+      }
       #cheats-drawer {
         position: fixed;
         inset: 0;
@@ -1253,6 +1284,9 @@
           📂 Escolher ROM do PC (.gba, .nds, .gbc, .zip)
           <input type="file" id="local-rom-input" accept=".gba,.nds,.zip,.7z,.rar,.gbc,.gb" style="display: none;" />
         </label>
+        <button class="btn btn-tactile" id="clear-cache-btn" onclick="clearRomMemoryCache()" title="Libera a memória RAM do navegador apagando as ROMs já jogadas do cache temporário">
+          🧹 Limpar Cache de ROMs (RAM)
+        </button>
       </div>
     </div>
   </div>
@@ -1377,6 +1411,17 @@
           <option value="wide|left-right">📱 NDS: Telas Lado a Lado</option>
           <option value="wide|top-bottom">📱 NDS: Telas Cima / Baixo</option>
         </select>
+
+        <div class="speed-control-pill" title="Ajustar velocidade do jogo (1x até 10x)">
+          <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); display:inline-flex; align-items:center; gap:2px;">
+            ⚡ <span id="speed-indicator" style="color:var(--sky); font-weight:900;">1x</span>
+          </span>
+          <input type="range" id="speed-slider" min="1" max="10" step="0.5" value="1" oninput="changeEmulatorSpeed(this.value)" />
+          <button class="btn btn-tactile speed-chip active" id="chip-1x" onclick="setSpeedPreset(1)">1x</button>
+          <button class="btn btn-tactile speed-chip" id="chip-2x" onclick="setSpeedPreset(2)">2x</button>
+          <button class="btn btn-tactile speed-chip" id="chip-5x" onclick="setSpeedPreset(5)">5x</button>
+          <button class="btn btn-tactile speed-chip" id="chip-10x" onclick="setSpeedPreset(10)">10x</button>
+        </div>
 
         <button class="btn btn-drive" id="toggle-cheats-btn">
           🧬 Cheats
@@ -2076,6 +2121,41 @@
 
     toggleCheatsBtn.addEventListener('click', toggleCheatsDrawer);
 
+    let currentEmulatorSpeed = 1.0;
+
+    function changeEmulatorSpeed(val) {
+      currentEmulatorSpeed = parseFloat(val) || 1.0;
+      updateSpeedUi(currentEmulatorSpeed);
+      sendPlayerAction('SET_SPEED', { speed: currentEmulatorSpeed });
+    }
+
+    function setSpeedPreset(val) {
+      currentEmulatorSpeed = parseFloat(val) || 1.0;
+      const slider = document.getElementById('speed-slider');
+      if (slider) slider.value = currentEmulatorSpeed;
+      updateSpeedUi(currentEmulatorSpeed);
+      sendPlayerAction('SET_SPEED', { speed: currentEmulatorSpeed });
+    }
+
+    function updateSpeedUi(speed) {
+      const indicator = document.getElementById('speed-indicator');
+      if (indicator) indicator.textContent = `${speed}x`;
+
+      [1, 2, 5, 10].forEach(p => {
+        const chip = document.getElementById(`chip-${p}x`);
+        if (chip) {
+          chip.classList.toggle('active', speed === p);
+        }
+      });
+    }
+
+    function resetEmulatorSpeed() {
+      currentEmulatorSpeed = 1.0;
+      const slider = document.getElementById('speed-slider');
+      if (slider) slider.value = 1;
+      updateSpeedUi(1.0);
+    }
+
     function sendPlayerAction(action, payload = {}) {
       if (emulatorIframe.contentWindow) {
         emulatorIframe.contentWindow.postMessage({ action, ...payload }, '*');
@@ -2158,6 +2238,7 @@
 
       nowPlayingTitle.textContent = `${displayTitle} [${consoleType}]`;
       playerView.classList.add('active');
+      resetEmulatorSpeed();
 
       // No celular, já abre automaticamente em Tela Cheia Real (100% da tela) ao tocar em Jogar!
       if (window.innerWidth <= 820) {
@@ -2260,6 +2341,7 @@
 
       nowPlayingTitle.textContent = `${file.name} [${sys}]`;
       playerView.classList.add('active');
+      resetEmulatorSpeed();
       if (window.innerWidth <= 820) {
         enterImmersiveFullscreen();
       }
@@ -2272,9 +2354,28 @@
       emulatorIframe.src = 'about:blank';
       playerView.classList.remove('active');
       cheatsDrawer.classList.remove('open');
+      // Libera imediatamente a memória RAM das ROMs carregadas
+      if (window.sessionRomBlobs) {
+        window.sessionRomBlobs.clear();
+      }
       loadSavesVault();
       loadGames();
     });
+
+    async function clearRomMemoryCache() {
+      const btn = document.getElementById('clear-cache-btn');
+      if (btn) btn.textContent = '⏳ Limpando RAM...';
+      let count = 0;
+      if (window.sessionRomBlobs) {
+        count = window.sessionRomBlobs.size;
+        window.sessionRomBlobs.clear();
+      }
+      try {
+        await fetch('/api/cache/clear', { method: 'POST' });
+      } catch (_) {}
+      if (btn) btn.textContent = '🧹 Limpar Cache de ROMs (RAM)';
+      alert(`🧹 Memória RAM liberada com sucesso!\n${count > 0 ? count + ' ROM(s) removidas do cache temporário.' : 'A memória RAM já estava limpa.'}\nSeus saves (.SRM e States) continuam 100% preservados.`);
+    }
 
     searchBtn.addEventListener('click', () => {
       currentPage = 1;

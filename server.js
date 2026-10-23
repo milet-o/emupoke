@@ -1477,6 +1477,24 @@ const server = http.createServer(async (req, res) => {
   }
 
 
+  if (pathname === '/api/cache/clear' && req.method === 'POST') {
+    let deletedCount = 0;
+    try {
+      const files = fs.readdirSync(CACHE_DIR);
+      for (const f of files) {
+        try {
+          fs.unlinkSync(path.join(CACHE_DIR, f));
+          deletedCount++;
+        } catch (_) {}
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ ok: true, deletedCount }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
   // 5. API: Inspecionar Pacote de ROM (100% em RAM, Zero Disco)
   if (pathname === '/api/rom-inspect') {
     const gameId = parsedUrl.searchParams.get('id') || 'custom';
