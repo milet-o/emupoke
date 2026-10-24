@@ -915,7 +915,8 @@
       flex-wrap: wrap;
     }
 
-    .speed-control-pill {
+    .speed-control-pill,
+    .volume-control-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
@@ -928,6 +929,12 @@
       width: 65px;
       height: 5px;
       accent-color: var(--sky);
+      cursor: pointer;
+    }
+    .volume-control-pill input[type="range"] {
+      width: 65px;
+      height: 5px;
+      accent-color: var(--emerald);
       cursor: pointer;
     }
     .speed-chip {
@@ -1570,7 +1577,8 @@
         padding: 5px 9px;
         font-size: 0.72rem;
       }
-      .player-toolbar .speed-control-pill {
+      .player-toolbar .speed-control-pill,
+      .player-toolbar .volume-control-pill {
         flex-shrink: 0;
       }
       #cheats-drawer {
@@ -2126,8 +2134,15 @@
           </select>
         </div>
 
+        <div class="volume-control-pill" title="Ajustar volume do áudio (0% até 100%)">
+          <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); display:inline-flex; align-items:center; gap:2px;">
+            🔊 <span id="volume-indicator" style="color:var(--emerald); font-weight:900;">100%</span>
+          </span>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" oninput="changeEmulatorVolume(this.value)" />
+        </div>
+
         <button class="btn btn-tactile" onclick="sendPlayerAction('UNLOCK_AUDIO')" title="Ativar áudio no Safari / iPhone">
-          🔊 Som
+          🔊 Desmutar iOS
         </button>
 
         <button class="btn btn-tactile" onclick="openWikiModal()" title="Calculadora de Tipos e Fraquezas">
@@ -3322,6 +3337,40 @@
       updateSpeedUi(1.0);
     }
 
+    let currentEmulatorVolume = parseFloat(localStorage.getItem('pokemule_volume') || '1.0');
+    if (isNaN(currentEmulatorVolume)) currentEmulatorVolume = 1.0;
+
+    function changeEmulatorVolume(val) {
+      currentEmulatorVolume = Math.max(0, Math.min(1, parseFloat(val)));
+      localStorage.setItem('pokemule_volume', String(currentEmulatorVolume));
+      updateVolumeUi(currentEmulatorVolume);
+      sendPlayerAction('SET_VOLUME', { volume: currentEmulatorVolume });
+    }
+
+    function updateVolumeUi(vol) {
+      const indicator = document.getElementById('volume-indicator');
+      const slider = document.getElementById('volume-slider');
+      const pct = Math.round(vol * 100);
+      if (indicator) {
+        indicator.textContent = pct === 0 ? 'Mudo' : `${pct}%`;
+        indicator.style.color = pct === 0 ? 'var(--primary)' : 'var(--emerald)';
+      }
+      if (slider && document.activeElement !== slider) {
+        slider.value = vol;
+      }
+    }
+
+    window.addEventListener('message', (event) => {
+      const data = event.data || {};
+      if (data.type === 'VOLUME_CHANGED') {
+        const v = parseFloat(data.volume);
+        if (!isNaN(v)) {
+          currentEmulatorVolume = v;
+          updateVolumeUi(v);
+        }
+      }
+    });
+
     function sendPlayerAction(action, payload = {}) {
       if (emulatorIframe.contentWindow) {
         emulatorIframe.contentWindow.postMessage({ action, ...payload }, '*');
@@ -3532,6 +3581,7 @@
       nowPlayingTitle.textContent = `${displayTitle} [${consoleType}]`;
       playerView.classList.add('active');
       resetEmulatorSpeed();
+      updateVolumeUi(currentEmulatorVolume);
 
       // Ativa áudio web nativamente no clique de jogar para iOS e navegadores móveis
       try {

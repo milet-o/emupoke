@@ -389,6 +389,22 @@
         unlockMobileAudio(true);
       }
 
+      if (data.action === 'SET_VOLUME') {
+        const vol = Math.max(0, Math.min(1, parseFloat(data.volume)));
+        window.currentVolumePreference = vol;
+        localStorage.setItem('pokemule_volume', String(vol));
+        try {
+          if (window.EJS_emulator?.setVolume) {
+            window.EJS_emulator.setVolume(vol);
+          }
+          if (vol === 0) {
+            if (window.EJS_emulator?.mute) window.EJS_emulator.mute();
+          } else {
+            if (window.EJS_emulator?.unmute) window.EJS_emulator.unmute();
+          }
+        } catch (_) {}
+      }
+
       if (data.action === 'SWITCH_NDS_CORE' && data.core) {
         localStorage.setItem('pokemule_nds_core', data.core);
         location.reload();
@@ -492,9 +508,13 @@
       window.EJS_color = '#ff5460';
       window.EJS_startOnLoaded = true;
 
+      const savedVolumeStr = localStorage.getItem('pokemule_volume');
+      const initialVolume = savedVolumeStr !== null ? parseFloat(savedVolumeStr) : 1.0;
+      window.currentVolumePreference = isNaN(initialVolume) ? 1.0 : initialVolume;
+
       window.EJS_threads = false;
-      window.EJS_volume = 1.0;
-      window.EJS_mute = false;
+      window.EJS_volume = window.currentVolumePreference;
+      window.EJS_mute = window.currentVolumePreference === 0;
 
       const ndsCore = params.get('ndscore') || localStorage.getItem('pokemule_nds_core') || 'desmume2015';
 
@@ -580,7 +600,7 @@
       document.body.appendChild(script);
     }
 
-    function unlockMobileAudio() {
+    function unlockMobileAudio(fromBtn = false) {
       try {
         const unlocker = document.getElementById('ios-audio-unlocker');
         if (unlocker && unlocker.paused) {
@@ -601,16 +621,53 @@
         if (window.EJS_emulator?.gameManager?.audioContext && window.EJS_emulator.gameManager.audioContext.state === 'suspended') {
           window.EJS_emulator.gameManager.audioContext.resume().catch(() => {});
         }
-        if (window.EJS_emulator?.setVolume) {
-          window.EJS_emulator.setVolume(1.0);
+        // ATENÇÃO: NUNCA forçar setVolume(1.0) aqui! O usuário controla livremente o volume no slider sem que ele resete sozinho.
+        if (fromBtn) {
+          const unmuteBtn = document.getElementById('unmute-mobile-btn');
+          if (unmuteBtn) unmuteBtn.style.display = 'none';
+          showToast('🔊 Som ativado!');
         }
       } catch (_) {}
     }
 
-    ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown'].forEach(evt => {
-      window.addEventListener(evt, () => unlockMobileAudio(), { passive: true });
-      document.addEventListener(evt, () => unlockMobileAudio(), { passive: true });
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 820;
+    if (isTouchDevice) {
+      const unmuteBtn = document.getElementById('unmute-mobile-btn');
+      if (unmuteBtn) unmuteBtn.style.display = 'inline-flex';
+    }
+
+    const unlockEvents = ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown'];
+    function handleInitialAudioUnlock() {
+      unlockMobileAudio(false);
+      // Uma vez que o áudio foi iniciado, remove os ouvintes para não interferir nas interações do mouse
+      if (window.__globalAudioContext?.state === 'running' || window.EJS_emulator?.audioContext?.state === 'running') {
+        unlockEvents.forEach(evt => {
+          window.removeEventListener(evt, handleInitialAudioUnlock);
+          document.removeEventListener(evt, handleInitialAudioUnlock);
+        });
+      }
+    }
+
+    unlockEvents.forEach(evt => {
+      window.addEventListener(evt, handleInitialAudioUnlock, { passive: true });
+      document.addEventListener(evt, handleInitialAudioUnlock, { passive: true });
     });
+
+    // Sincroniza alterações feitas no slider de volume nativo do emulador com a barra externa
+    setInterval(() => {
+      try {
+        if (window.EJS_emulator && typeof window.EJS_emulator.volume === 'number') {
+          const v = Math.round(window.EJS_emulator.volume * 100) / 100;
+          if (Math.abs(v - window.currentVolumePreference) >= 0.03) {
+            window.currentVolumePreference = v;
+            localStorage.setItem('pokemule_volume', String(v));
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'VOLUME_CHANGED', volume: v }, '*');
+            }
+          }
+        }
+      } catch (_) {}
+    }, 400);
 
     async function downloadAndStart() {
       if (directBlobUrl) {
